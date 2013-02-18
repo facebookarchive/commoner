@@ -2,9 +2,9 @@ Brigade
 ---
 Brigade flexibly and efficiently bundles CommonJS modules for delivery to a web browser by
 
-    1. supporting a declarative syntax for organizing sets of modules,
-    2. exploiting the asynchronicity and parallelism of the bundling process, and
-    3. never rebuilding bundles that have already been built.
+1. supporting a declarative syntax for organizing sets of modules,
+2. using [promises](https://github.com/kriskowal/q) to manage an asynchronous bundling pipeline, and
+3. never rebuilding bundles that have already been built.
 
 The output can be conveniently consumed not only by other node.js modules but also by external programs. Bundles produced by the build process are collected in a single directory that can be used by any static file server, or easily uploaded to a CDN for serving production traffic.
 
@@ -51,10 +51,10 @@ This object expresses a *tree* of possible bundle sequences. A bundle is simply 
 
 Given the example tree above, you might have a /settings page that uses the following sequence of bundles:
 
-    1. core            (+ any dependencies and a small module loader)
-    2. third-party     (+ dependencies not in core)
-    3. settings        (+ dependencies not in core or third-party)
-    4. tests/settings  (+ dependencies not in core, third-party, or settings)
+1. `core`            (+ any dependencies and a small module loader)
+2. `third-party`     (+ dependencies not in core)
+3. `settings`        (+ dependencies not in core or third-party)
+4. `tests/settings`  (+ dependencies not in core, third-party, or settings)
 
 There is no overlap between the modules in a given sequence of bundles, since any given module can appear at most once in at most one bundle in the sequence.
 
@@ -62,8 +62,8 @@ Each bundle in the sequence corresponds to a separate JavaScript file. The first
 
 Since two examples are much better than one, you might also have a sharing widget that requires only two bundles:
 
-    1. widget/common
-    2. widget/share
+1. `widget/common`
+2. `widget/share`
 
 The separation is useful if "widget/common" is relatively unchanging and you want it to be cached separately. Alternatively, you might value the simplicity of having only one JS file to include, in which case you could promote "widget/share" to the top level of the schema, in order to bundle it (and all of its dependencies) into one monolithic file.
 
@@ -119,8 +119,8 @@ If you were to parse this JSON and store the resulting object in a variable call
 
 Likewise, you could refer to "widget/share" in two different ways:
 
-    - `tree["widget/common"].then["widget/share"].file` or
-    - `tree["widget/share"].file`
+- `tree["widget/common"].then["widget/share"].file` or
+- `tree["widget/share"].file`
 
 If you run the `bin/bridgade` command again without changing anything, the output will be the same, but the command will run much more quickly, because it notices when a file with a specific name already exists.
 
