@@ -1,0 +1,42 @@
+{
+  "author": {
+    "name": "Ben Newman",
+    "email": "bn@cs.stanford.edu"
+  },
+  "name": "brigade",
+  "description": "Bucket brigade for bundling browser modules",
+  "keywords": [
+    "modules",
+    "require",
+    "commonjs",
+    "exports",
+    "browser",
+    "packaging",
+    "packager",
+    "install"
+  ],
+  "version": "0.1.1",
+  "homepage": "http://github.com/benjamn/brigade",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/benjamn/brigade.git"
+  },
+  "main": "main.js",
+  "bin": {
+    "brigade": "./bin/brigade"
+  },
+  "scripts": {
+    "test": "whiskey test/run.js"
+  },
+  "dependencies": {
+    "commander": ">= 1.1.1",
+    "uglify-js": ">= 2.2.4",
+    "install": ">= 0.1.3"
+  },
+  "optionalDependencies": {
+    "whiskey": "0.6.x"
+  },
+  "engines": {
+    "node": ">= 0.6"
+  }
+}
