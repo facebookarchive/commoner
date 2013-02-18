@@ -29,6 +29,7 @@
     "test": "whiskey test/run.js"
   },
   "dependencies": {
+    "q": ">= 0.8.12",
     "commander": ">= 1.1.1",
     "uglify-js": ">= 2.2.4",
     "install": ">= 0.1.3"
