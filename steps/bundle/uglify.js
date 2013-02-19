@@ -4,9 +4,9 @@ assert.strictEqual(typeof minify, "function");
 
 exports.name = "uglify";
 
-exports.version = 1;
+exports.version = 2;
 
-exports.build = function(bundle, source) {
+exports.build = function(context, source) {
     var result = minify(source, { fromString: true });
     return result.code;
 };

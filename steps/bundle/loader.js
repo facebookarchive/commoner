@@ -3,10 +3,10 @@ var Q = require("q");
 
 exports.name = "prepend-installer";
 
-exports.version = 1;
+exports.version = 2;
 
-exports.build = function(bundle, source) {
-    if (bundle.parent)
+exports.build = function(context, source) {
+    if (context.bundle.parent)
         return source;
 
     var deferred = Q.defer();
