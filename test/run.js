@@ -43,6 +43,32 @@ exports.testReaderSteps = function(t, assert) {
     }).done(t.finish.bind(t));
 };
 
+exports.testReaderCaching = function(t, assert) {
+    var reader = new ModuleReader(sourceDir);
+
+    var homes = [
+        reader.readModuleP("home"),
+        reader.readModuleP("home"),
+        reader.noCacheReadModuleP("home")
+    ];
+
+    assert.strictEqual(homes[0], homes[1]);
+    assert.notStrictEqual(homes[0], homes[2]);
+    assert.notStrictEqual(homes[1], homes[2]);
+
+    Q.all(homes).spread(function(h0, h1, h2) {
+        assert.strictEqual(h0, h1);
+
+        assert.notStrictEqual(h0, h2);
+        assert.notStrictEqual(h1, h2);
+
+        assert.strictEqual(h0.hash, h1.hash);
+        assert.strictEqual(h1.hash, h2.hash);
+
+        t.finish();
+    });
+};
+
 function makePipeline() {
     var reader = new ModuleReader(sourceDir);
     var writer = new BundleWriter(outputDir);
