@@ -14,7 +14,7 @@
     "browserify",
     "stitch"
   ],
-  "version": "0.8.4",
+  "version": "0.8.5",
   "license": "MIT",
   "homepage": "http://github.com/benjamn/commoner",
   "repository": {
