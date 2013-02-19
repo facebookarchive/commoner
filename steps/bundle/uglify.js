@@ -1,12 +1,13 @@
-var assert = require("assert");
-var minify = require("uglify-js").minify;
-assert.strictEqual(typeof minify, "function");
-
 exports.name = "uglify";
+exports.version = 3;
 
-exports.version = 2;
+var minify = require("uglify-js").minify;
 
 exports.build = function(context, source) {
-    var result = minify(source, { fromString: true });
-    return result.code;
+    return minify(source, {
+        fromString: true,
+        mangle: {
+            except: ["require"]
+        }
+    }).code;
 };
