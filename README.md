@@ -16,9 +16,10 @@ From NPM:
 
 From GitHub:
 
+    cd path/to/node_modules
     git clone git://github.com/benjamn/brigade.git
     cd brigade
-    npm link .
+    npm install .
 
 Input
 ---
