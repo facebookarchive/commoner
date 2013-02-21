@@ -64,9 +64,7 @@ exports.testReaderCaching = function(t, assert) {
 
         assert.strictEqual(h0.hash, h1.hash);
         assert.strictEqual(h1.hash, h2.hash);
-
-        t.finish();
-    });
+    }).done(t.finish.bind(t));
 };
 
 function makePipeline() {
