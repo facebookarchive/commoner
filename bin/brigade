@@ -28,11 +28,42 @@ function readSchemaP(schemaFile) {
     return deferred.promise;
 }
 
+function mkdirP(dir) {
+    var deferred = Q.defer();
+
+    function finish(err) {
+        if (err) {
+            deferred.reject(err);
+        } else {
+            deferred.resolve(dir);
+        }
+    }
+
+    fs.stat(dir, function(err, stats) {
+        if (err) {
+            if (err.code == "ENOENT") {
+                fs.mkdir(dir, finish);
+            } else {
+                finish(err);
+            }
+        } else if (stats.isDirectory()) {
+            finish();
+        } else {
+            finish(dir + " is not a directory");
+        }
+    });
+
+    return deferred.promise;
+}
+
 var schemaFile = path.join(dir, program.schema);
 var sourceDir = path.dirname(schemaFile);
 var outputDir = path.join(dir, program.outputDir);
 
-readSchemaP(schemaFile).then(function(schema) {
+Q.all([
+    readSchemaP(schemaFile),
+    mkdirP(outputDir)
+]).spread(function(schema, outputDir) {
     var brigade = require("brigade");
     var reader = new brigade.ModuleReader(sourceDir);
     var writer = new brigade.BundleWriter(outputDir);
