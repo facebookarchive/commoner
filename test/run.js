@@ -169,3 +169,16 @@ exports.testBundleWriter = function(t, assert) {
         assert.strictEqual(exists, true);
     }).done(t.finish.bind(t));
 };
+
+exports.testResolver = function(t, assert) {
+    var reader = new ModuleReader(sourceDir);
+    Q.all([
+        reader.readModuleP("WidgetShare"),
+        reader.readModuleP("widget/share")
+    ]).spread(function(share1, share2) {
+        assert.strictEqual(share1.id, "WidgetShare");
+        assert.strictEqual(share2.id, "WidgetShare");
+        assert.strictEqual(share1.source, share2.source);
+        assert.strictEqual(share1.hash, share2.hash);
+    }).done(t.finish.bind(t));
+};
