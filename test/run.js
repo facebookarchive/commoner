@@ -1,7 +1,9 @@
+var BuildContext = require("../lib/context").BuildContext;
 var ModuleReader = require("../lib/reader").ModuleReader;
 var BundleWriter = require("../lib/writer").BundleWriter;
 var Pipeline = require("../lib/pipeline").Pipeline;
 var makeBundleP = require("../lib/bundle").makeBundleP;
+var util = require("../lib/util");
 var fs = require("fs");
 var Q = require("q");
 
@@ -15,13 +17,33 @@ try {
     // pass
 }
 
+var debugContext = new BuildContext({
+    debug: true
+}, sourceDir, outputDir, []);
+
+var releaseContext = new BuildContext({
+    debug: false
+}, sourceDir, outputDir, []);
+
+function getSourceP(id) {
+    return this.readFileP(id + ".js");
+}
+
+function waitForHelpers(t, helperP) {
+    Q.all([
+        helperP(debugContext),
+        helperP(releaseContext)
+    ]).done(t.finish.bind(t));
+}
+
 exports.testModuleReader = function(t, assert) {
-    var reader = new ModuleReader(sourceDir);
+    var reader = new ModuleReader(debugContext, [getSourceP], []);
 
     reader.readModuleP("home").then(function(home) {
         assert.strictEqual(home.id, "home");
         assert.strictEqual(typeof home.source, "string");
         assert.notEqual(home.source.indexOf("exports"), -1);
+        assert.strictEqual(home.source.indexOf("install"), 0);
         return home;
     }).invoke("getRequiredP").then(function(reqs) {
         assert.strictEqual(reqs.length, 1);
@@ -29,22 +51,8 @@ exports.testModuleReader = function(t, assert) {
     }).done(t.finish.bind(t));
 };
 
-exports.testReaderSteps = function(t, assert) {
-    var rawReader = new ModuleReader(sourceDir).setSteps();
-    var wrappedReader = new ModuleReader(sourceDir).setSteps(
-        require("../steps/module/wrap"));
-
-    Q.all([
-        rawReader.readModuleP("home"),
-        wrappedReader.readModuleP("home")
-    ]).spread(function(raw, wrapped) {
-        assert.strictEqual(raw.source.indexOf("install"), -1);
-        assert.strictEqual(wrapped.source.indexOf("install"), 0);
-    }).done(t.finish.bind(t));
-};
-
 exports.testReaderCaching = function(t, assert) {
-    var reader = new ModuleReader(sourceDir);
+    var reader = new ModuleReader(debugContext, [getSourceP], []);
 
     var homes = [
         reader.readModuleP("home"),
@@ -67,20 +75,24 @@ exports.testReaderCaching = function(t, assert) {
     }).done(t.finish.bind(t));
 };
 
-function makePipeline() {
-    var reader = new ModuleReader(sourceDir);
-    var writer = new BundleWriter(outputDir);
-    return new Pipeline(reader, writer);
+function makePipeline(context) {
+    var reader = new ModuleReader(context, [getSourceP], []);
+    var writer = new BundleWriter(context, []);
+    return new Pipeline(context, reader, writer);
 }
 
 exports.testSimpleSchema = function(t, assert) {
-    makePipeline().setSchema({
-        home: {}
-    }).getTreeP().then(function(tree) {
-        assert.ok(tree.home);
-        assert.ok(tree.home.file);
-        assert.ok(/\.js$/.test(tree.home.file));
-    }).done(t.finish.bind(t));
+    function helperP(context) {
+        return makePipeline(context).setSchema({
+            home: {}
+        }).getTreeP().then(function(tree) {
+            assert.ok(tree.home);
+            assert.ok(tree.home.file);
+            assert.ok(/\.js$/.test(tree.home.file));
+        });
+    }
+
+    waitForHelpers(t, helperP);
 };
 
 exports.testComplexSchema = function(t, assert) {
@@ -114,24 +126,33 @@ exports.testComplexSchema = function(t, assert) {
         });
     }
 
-    makePipeline().setSchema(schema).getTreeP().then(function(tree) {
-        traverse(schema, tree);
-    }).done(t.finish.bind(t));
+    function helperP(context) {
+        var pipeline = makePipeline(context).setSchema(schema);
+        return pipeline.getTreeP().then(function(tree) {
+            traverse(schema, tree);
+        });
+    }
+
+    waitForHelpers(t, helperP);
 };
 
 exports.testBundle = function(t, assert) {
-    var reader = new ModuleReader(sourceDir);
+    function helperP(context) {
+        var reader = new ModuleReader(context, [getSourceP], []);
 
-    reader.readModuleP("home").then(function(homeModule) {
-        return makeBundleP(homeModule);
-    }).then(function(bundle) {
-        var homeModule = bundle.get("home");
-        var assertModule = bundle.get("assert");
-        assert.ok(homeModule);
-        assert.ok(assertModule);
-        assert.strictEqual(homeModule.id, "home");
-        assert.strictEqual(assertModule.id, "assert");
-    }).done(t.finish.bind(t));
+        return reader.readModuleP("home").then(function(homeModule) {
+            return makeBundleP(homeModule);
+        }).then(function(bundle) {
+            var homeModule = bundle.get("home");
+            var assertModule = bundle.get("assert");
+            assert.ok(homeModule);
+            assert.ok(assertModule);
+            assert.strictEqual(homeModule.id, "home");
+            assert.strictEqual(assertModule.id, "assert");
+        });
+    }
+
+    waitForHelpers(t, helperP);
 };
 
 function writeAndCheckExistsP(writer, module) {
@@ -145,38 +166,41 @@ function writeAndCheckExistsP(writer, module) {
     return deferred.promise;
 }
 
-exports.testBundleWriter = function(t, assert) {
-    var reader = new ModuleReader(sourceDir);
-    var writer = new BundleWriter(outputDir);
-
-    reader.setSteps(require("../steps/module/wrap"));
-    writer.setSteps(require("../steps/bundle/loader"),
-                    require("../steps/bundle/uglify"));
-
+function clearOutputSync(outputDir) {
     fs.readdirSync(outputDir).forEach(function(file) {
         fs.unlinkSync(path.join(outputDir, file));
     });
 
     fs.rmdirSync(outputDir);
     fs.mkdirSync(outputDir);
+}
 
-    reader.readModuleP("home").then(function(home) {
-        assert.strictEqual(home.id, "home");
-        return writeAndCheckExistsP(writer, makeBundleP(home));
-    }).then(function(exists) {
-        assert.strictEqual(exists, true);
-    }).done(t.finish.bind(t));
+exports.testBundleWriter = function(t, assert) {
+    function helperP(context) {
+        var reader = new ModuleReader(context, [getSourceP], []);
+        var writer = new BundleWriter(context, []);
+
+        return reader.readModuleP("home").then(function(home) {
+            assert.strictEqual(home.id, "home");
+            return writeAndCheckExistsP(writer, makeBundleP(home));
+        }).then(function(exists) {
+            assert.strictEqual(exists, true);
+        });
+    }
+
+    waitForHelpers(t, helperP);
 };
 
-exports.testResolver = function(t, assert) {
-    var reader = new ModuleReader(sourceDir);
+exports.testFindDirective = function(t, assert) {
     Q.all([
-        reader.readModuleP("WidgetShare"),
-        reader.readModuleP("widget/share")
-    ]).spread(function(share1, share2) {
-        assert.strictEqual(share1.id, "WidgetShare");
-        assert.strictEqual(share2.id, "WidgetShare");
-        assert.strictEqual(share1.source, share2.source);
-        assert.strictEqual(share1.hash, share2.hash);
+        util.findDirectiveP("providesModule", sourceDir),
+        debugContext.getProvidedP()
+    ]).spread(function(pathToValue, valueToPath) {
+        assert.deepEqual(pathToValue, {
+            "widget/share.js": "WidgetShare"
+        });
+        assert.deepEqual(valueToPath, {
+            "WidgetShare": "widget/share.js"
+        });
     }).done(t.finish.bind(t));
 };

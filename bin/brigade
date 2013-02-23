@@ -1,75 +1,11 @@
 #!/usr/bin/env node
 
-var assert = require("assert");
-var fs = require("fs");
-var path = require("path");
-var program = require("commander");
-var Q = require("q");
-var argv = process.argv;
-var dir = process.cwd();
-
-program
-    .version("0.1.1")
-    .option("-s, --schema <path>", "Schema file")
-    .option("-o, --output-dir <path>", "Output directory")
-    .parse(process.argv);
-
-function readSchemaP(schemaFile) {
-    var deferred = Q.defer();
-
-    fs.readFile(schemaFile, "utf8", function(err, json) {
-        if (err) {
-            deferred.reject(err);
-        } else {
-            deferred.resolve(JSON.parse(json));
-        }
+require("brigade").source(function(id) {
+    var context = this;
+    return context.getProvidedP().then(function(idToPath) {
+        if (idToPath.hasOwnProperty(id))
+            return context.readFileP(idToPath[id]);
     });
-
-    return deferred.promise;
-}
-
-function mkdirP(dir) {
-    var deferred = Q.defer();
-
-    function finish(err) {
-        if (err) {
-            deferred.reject(err);
-        } else {
-            deferred.resolve(dir);
-        }
-    }
-
-    fs.stat(dir, function(err, stats) {
-        if (err) {
-            if (err.code == "ENOENT") {
-                fs.mkdir(dir, finish);
-            } else {
-                finish(err);
-            }
-        } else if (stats.isDirectory()) {
-            finish();
-        } else {
-            finish(dir + " is not a directory");
-        }
-    });
-
-    return deferred.promise;
-}
-
-var schemaFile = path.join(dir, program.schema);
-var sourceDir = path.dirname(schemaFile);
-var outputDir = path.join(dir, program.outputDir);
-
-Q.all([
-    readSchemaP(schemaFile),
-    mkdirP(outputDir)
-]).spread(function(schema, outputDir) {
-    var brigade = require("brigade");
-    var reader = new brigade.ModuleReader(sourceDir);
-    var writer = new brigade.BundleWriter(outputDir);
-    var pipeline = new brigade.Pipeline(reader, writer);
-    return pipeline.setSchema(schema).getTreeP();
-}).then(function(tree) {
-    process.stdout.write(JSON.stringify(tree));
-    process.stdout.write("\n");
-}).done();
+}, function(id) {
+    return this.readFileP(id + ".js");
+});

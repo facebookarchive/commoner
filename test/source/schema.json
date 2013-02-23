@@ -17,5 +17,5 @@
         "widget/gallery": {},
         "widget/share": {}
     },
-    "widget/share": {}
+    "WidgetShare": {}
 }
