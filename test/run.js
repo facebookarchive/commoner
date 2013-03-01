@@ -66,9 +66,8 @@ exports.testReaderCaching = function(t, assert) {
 
     Q.all(homes).spread(function(h0, h1, h2) {
         assert.strictEqual(h0, h1);
-
-        assert.notStrictEqual(h0, h2);
-        assert.notStrictEqual(h1, h2);
+        assert.strictEqual(h0, h2);
+        assert.strictEqual(h1, h2);
 
         assert.strictEqual(h0.hash, h1.hash);
         assert.strictEqual(h1.hash, h2.hash);
