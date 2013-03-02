@@ -57,7 +57,7 @@ exports.testReaderCaching = function(t, assert) {
     var homes = [
         reader.readModuleP("home"),
         reader.readModuleP("home"),
-        reader.noCacheReadModuleP("home")
+        reader.readModuleP.originalFn.call(reader, "home")
     ];
 
     assert.strictEqual(homes[0], homes[1]);
