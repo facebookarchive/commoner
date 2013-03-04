@@ -30,7 +30,7 @@ Bp.cliBuildP = function() {
         .option("-s, --schema <file>", "Schema file")
         .option("-o, --output-dir <directory>", "Output directory")
         .option("-c, --config <file>", "JSON configuration file (- to read from STDIN)")
-        .option("-w, --watch", "Continuously rebuild (TODO)")
+        .option("-w, --watch", "Continually rebuild")
         .parse(process.argv.slice(0));
 
     var workingDir = process.cwd();
@@ -43,15 +43,38 @@ Bp.cliBuildP = function() {
             ? util.readJsonFileP(path.join(workingDir, program.config))
             : Q.resolve({ debug: false });
 
-    return Q.all([
-        new Watcher(sourceDir),
+    var watcher = new Watcher(
+        sourceDir,
+        program.watch
+    ).on("changed", function(file) {
+        if (program.watch)
+            rebuild();
+    });
+
+    var inputP = Q.all([
+        watcher,
         util.mkdirP(outputDir),
         util.readJsonFileP(schemaFile),
-        configP,
-    ]).spread(this.buildP.bind(this)).then(function(tree) {
+        configP
+    ]);
+
+    function writeTree(tree) {
         process.stdout.write(JSON.stringify(tree));
         process.stdout.write("\n");
-    }).done();
+    }
+
+    var buildP = this.buildP.bind(this);
+
+    function rebuild() {
+        if (rebuild.ing)
+            return;
+        rebuild.ing = true;
+        inputP.spread(buildP).then(writeTree).done(function() {
+            rebuild.ing = false;
+        });
+    }
+
+    rebuild();
 };
 
 Bp.buildP = function(watcher, outputDir, schema, config) {
