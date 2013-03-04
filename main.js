@@ -47,8 +47,10 @@ Bp.cliBuildP = function() {
         sourceDir,
         program.watch
     ).on("changed", function(file) {
-        if (program.watch)
+        if (program.watch) {
+            log.err(util.yellow(file + " changed; rebuilding..."));
             rebuild();
+        }
     });
 
     var inputP = Q.all([
@@ -58,23 +60,34 @@ Bp.cliBuildP = function() {
         configP
     ]);
 
-    function writeTree(tree) {
-        process.stdout.write(JSON.stringify(tree));
-        process.stdout.write("\n");
-    }
-
     var buildP = this.buildP.bind(this);
 
     function rebuild() {
         if (rebuild.ing)
             return;
         rebuild.ing = true;
-        inputP.spread(buildP).then(writeTree).done(function() {
+
+        inputP.spread(buildP).then(function(tree) {
             rebuild.ing = false;
+            log.out(JSON.stringify(tree));
+        })["catch"](function(err) {
+            rebuild.ing = false;
+            log.err(util.red(err));
         });
     }
 
     rebuild();
+};
+
+// TODO Move this into lib/util.js.
+var log = {
+    out: function(text) {
+        process.stdout.write(text + "\n");
+    },
+
+    err: function(text) {
+        process.stderr.write(text + "\n");
+    }
 };
 
 Bp.buildP = function(watcher, outputDir, schema, config) {
