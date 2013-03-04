@@ -3,6 +3,7 @@ var path = require("path");
 var Q = require("q");
 var slice = Array.prototype.slice;
 
+var Watcher = require("./lib/watcher").Watcher;
 var BuildContext = require("./lib/context").BuildContext;
 var ModuleReader = require("./lib/reader").ModuleReader;
 var BundleWriter = require("./lib/writer").BundleWriter;
@@ -34,6 +35,7 @@ Bp.cliBuildP = function() {
 
     var workingDir = process.cwd();
     var schemaFile = path.normalize(path.join(workingDir, program.schema));
+    var sourceDir = path.dirname(schemaFile);
     var outputDir = path.normalize(path.join(workingDir, program.outputDir));
     var configP = (program.config === "-")
         ? util.readJsonFromStdinP()
@@ -42,7 +44,7 @@ Bp.cliBuildP = function() {
             : Q.resolve({ debug: false });
 
     return Q.all([
-        path.dirname(schemaFile),
+        new Watcher(sourceDir),
         util.mkdirP(outputDir),
         util.readJsonFileP(schemaFile),
         configP,
@@ -52,9 +54,10 @@ Bp.cliBuildP = function() {
     }).done();
 };
 
-Bp.buildP = function(sourceDir, outputDir, schema, config) {
+Bp.buildP = function(watcher, outputDir, schema, config) {
+    assert.ok(watcher instanceof Watcher);
     var cbs = this.callbacks;
-    var context = new BuildContext(config, sourceDir, outputDir);
+    var context = new BuildContext(config, watcher, outputDir);
     var reader = new ModuleReader(context, cbs.source, cbs.module);
     var writer = new BundleWriter(context, cbs.bundle);
     var pipeline = new Pipeline(context, reader, writer);

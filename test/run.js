@@ -1,3 +1,4 @@
+var Watcher = require("../lib/watcher").Watcher;
 var BuildContext = require("../lib/context").BuildContext;
 var ModuleReader = require("../lib/reader").ModuleReader;
 var BundleWriter = require("../lib/writer").BundleWriter;
@@ -17,13 +18,15 @@ try {
     // pass
 }
 
+var watcher = new Watcher(sourceDir);
+
 var debugContext = new BuildContext({
     debug: true
-}, sourceDir, outputDir, []);
+}, watcher, outputDir, []);
 
 var releaseContext = new BuildContext({
     debug: false
-}, sourceDir, outputDir, []);
+}, watcher, outputDir, []);
 
 function getSourceP(id) {
     return this.readFileP(id + ".js");
@@ -190,13 +193,13 @@ exports.testBundleWriter = function(t, assert) {
     waitForHelpers(t, helperP);
 };
 
-exports.testFindDirective = function(t, assert) {
+exports.testGrepP = function(t, assert) {
     Q.all([
-        util.findDirectiveP("providesModule", sourceDir),
+        watcher.grepP("@providesModule\\s\\+\\S\\+"),
         debugContext.getProvidedP()
-    ]).spread(function(pathToValue, valueToPath) {
-        assert.deepEqual(pathToValue, {
-            "widget/share.js": "WidgetShare"
+    ]).spread(function(pathToMatch, valueToPath) {
+        assert.deepEqual(pathToMatch, {
+            "widget/share.js": "@providesModule WidgetShare"
         });
         assert.deepEqual(valueToPath, {
             "WidgetShare": "widget/share.js"
