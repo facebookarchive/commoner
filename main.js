@@ -10,6 +10,10 @@ var BundleWriter = require("./lib/writer").BundleWriter;
 var Pipeline = require("./lib/pipeline").Pipeline;
 var util = require("./lib/util");
 
+var versionP = util.readJsonFileP(
+    path.join(__dirname, "package.json")
+).get("version");
+
 function Brigade() {
     var self = this;
     assert.ok(self instanceof Brigade);
@@ -23,10 +27,10 @@ function Brigade() {
 
 var Bp = Brigade.prototype;
 
-Bp.cliBuildP = function() {
+Bp.cliBuildP = function(version) {
     var program = require("commander");
 
-    program.version("0.3.1")
+    program.version(version)
         .option("-s, --schema <file>", "Schema file")
         .option("-o, --output-dir <directory>", "Output directory")
         .option("-c, --config <file>", "JSON configuration file [/dev/stdin]")
@@ -124,7 +128,11 @@ function defCallback(name) {
 
     exports[name] = function() {
         var api = new Brigade;
-        process.nextTick(api.cliBuildP.bind(api));
+
+        versionP.then(function(version) {
+            api.cliBuildP(version);
+        });
+
         return api[name].apply(api, arguments);
     };
 }
