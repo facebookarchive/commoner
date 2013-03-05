@@ -72,7 +72,7 @@ Bp.cliBuildP = function() {
             log.out(JSON.stringify(tree));
         })["catch"](function(err) {
             rebuild.ing = false;
-            log.err(util.red(err));
+            log.err(util.red(err.stack));
         });
     }
 
