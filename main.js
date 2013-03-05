@@ -29,7 +29,7 @@ Bp.cliBuildP = function() {
     program.version("0.3.1")
         .option("-s, --schema <file>", "Schema file")
         .option("-o, --output-dir <directory>", "Output directory")
-        .option("-c, --config <file>", "JSON configuration file (- to read from STDIN)")
+        .option("-c, --config <file>", "JSON configuration file [/dev/stdin]")
         .option("-w, --watch", "Continually rebuild")
         .parse(process.argv.slice(0));
 
@@ -37,11 +37,6 @@ Bp.cliBuildP = function() {
     var schemaFile = path.normalize(path.join(workingDir, program.schema));
     var sourceDir = path.dirname(schemaFile);
     var outputDir = path.normalize(path.join(workingDir, program.outputDir));
-    var configP = (program.config === "-")
-        ? util.readJsonFromStdinP()
-        : program.config
-            ? util.readJsonFileP(path.join(workingDir, program.config))
-            : Q.resolve({ debug: false });
 
     var watcher = new Watcher(
         sourceDir,
@@ -57,7 +52,7 @@ Bp.cliBuildP = function() {
         watcher,
         util.mkdirP(outputDir),
         util.readJsonFileP(schemaFile),
-        configP
+        getConfigP(workingDir, program.config)
     ]);
 
     var buildP = this.buildP.bind(this);
@@ -89,6 +84,22 @@ var log = {
         process.stderr.write(text + "\n");
     }
 };
+
+function getConfigP(workingDir, configFile) {
+    configFile = path.normalize(configFile || "/dev/stdin");
+
+    if (configFile.charAt(0) !== "/")
+        configFile = path.join(workingDir, configFile);
+
+    if (configFile === "/dev/stdin") {
+        log.err(util.yellow(
+            "Expecting configuration from STDIN (pass --config <file> " +
+            "if stuck here)..."));
+        return util.readJsonFromStdinP();
+    }
+
+    return util.readJsonFileP(configFile);
+}
 
 Bp.buildP = function(watcher, outputDir, schema, config) {
     assert.ok(watcher instanceof Watcher);
