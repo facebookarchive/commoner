@@ -15,7 +15,7 @@
     "packager",
     "install"
   ],
-  "version": "0.3.4",
+  "version": "0.3.5",
   "homepage": "http://github.com/benjamn/brigade",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "test": "whiskey test/run.js"
   },
   "dependencies": {
-    "q": ">= 0.8.12",
+    "q": ">= 0.9.1",
     "commander": ">= 1.1.1",
     "uglify-js": ">= 2.2.4",
     "install": ">= 0.1.3"
