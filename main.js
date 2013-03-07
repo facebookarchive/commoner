@@ -38,9 +38,9 @@ Bp.cliBuildP = function(version) {
         .parse(process.argv.slice(0));
 
     var workingDir = process.cwd();
-    var schemaFile = path.normalize(path.join(workingDir, program.schema));
+    var schemaFile = absolutePath(workingDir, program.schema);
     var sourceDir = path.dirname(schemaFile);
-    var outputDir = path.normalize(path.join(workingDir, program.outputDir));
+    var outputDir = absolutePath(workingDir, program.outputDir);
 
     var watcher = new Watcher(
         sourceDir,
@@ -78,6 +78,14 @@ Bp.cliBuildP = function(version) {
     rebuild();
 };
 
+function absolutePath(workingDir, pathToJoin) {
+    workingDir = path.normalize(workingDir);
+    pathToJoin = path.normalize(pathToJoin);
+    if (pathToJoin.charAt(0) !== "/")
+        pathToJoin = path.join(workingDir, pathToJoin);
+    return pathToJoin;
+}
+
 // TODO Move this into lib/util.js.
 var log = {
     out: function(text) {
@@ -90,12 +98,10 @@ var log = {
 };
 
 function getConfigP(workingDir, configFile) {
-    configFile = path.normalize(configFile || "/dev/stdin");
+    var stdin = "/dev/stdin";
+    configFile = absolutePath(workingDir, configFile || stdin);
 
-    if (configFile.charAt(0) !== "/")
-        configFile = path.join(workingDir, configFile);
-
-    if (configFile === "/dev/stdin") {
+    if (configFile === stdin) {
         log.err(util.yellow(
             "Expecting configuration from STDIN (pass --config <file> " +
             "if stuck here)..."));
