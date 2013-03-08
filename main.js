@@ -54,7 +54,7 @@ Bp.cliBuildP = function(version) {
 
     var inputP = Q.all([
         watcher,
-        util.mkdirP(outputDir),
+        lockOutputDirP(outputDir),
         util.readJsonFileP(schemaFile),
         getConfigP(workingDir, program.config)
     ]);
@@ -96,6 +96,17 @@ var log = {
         process.stderr.write(text + "\n");
     }
 };
+
+function lockOutputDirP(outputDir) {
+    return util.mkdirP(outputDir).then(function(dir) {
+        var lockFile = path.join(outputDir, ".lock.pid");
+        return util.acquireLockFileP(lockFile).then(function() {
+            return dir;
+        }, function(err) {
+            throw new Error("output directory " + outputDir + " currently in use");
+        });
+    });
+}
 
 function getConfigP(workingDir, configFile) {
     var stdin = "/dev/stdin";
