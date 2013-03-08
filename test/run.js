@@ -206,3 +206,29 @@ exports.testGrepP = function(t, assert) {
         });
     }).done(t.finish.bind(t));
 };
+
+exports.testMakePromise = function(t, assert) {
+    var error = new Error("test");
+
+    function helperP(context) {
+        return context.makePromise(function(callback) {
+            process.nextTick(function() {
+                callback(error, "asdf");
+            });
+        }).then(function() {
+            assert.ok(false, "should have thrown an error");
+        }, function(err) {
+            assert.strictEqual(err, error);
+
+            return context.makePromise(function(callback) {
+                process.nextTick(function() {
+                    callback(null, "success");
+                });
+            }).then(function(result) {
+                assert.strictEqual(result, "success");
+            });
+        })
+    }
+
+    waitForHelpers(t, helperP);
+};
