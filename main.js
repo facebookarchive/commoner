@@ -33,7 +33,7 @@ Bp.cliBuildP = function(version) {
     program.version(version)
         .option("-s, --schema <file>", "Schema file")
         .option("-o, --output-dir <directory>", "Output directory")
-        .option("-c, --config <file>", "JSON configuration file [/dev/stdin]")
+        .option("-c, --config [file]", "JSON configuration file (no file means STDIN)")
         .option("-w, --watch", "Continually rebuild")
         .parse(process.argv.slice(0));
 
@@ -109,8 +109,16 @@ function lockOutputDirP(outputDir) {
 }
 
 function getConfigP(workingDir, configFile) {
+    if (typeof configFile === "undefined")
+        return {}; // Empty config.
+
     var stdin = "/dev/stdin";
-    configFile = absolutePath(workingDir, configFile || stdin);
+    if (configFile === true) {
+        // When --config is present but has no argument, default to STDIN.
+        configFile = stdin;
+    }
+
+    configFile = absolutePath(workingDir, configFile);
 
     if (configFile === stdin) {
         log.err(util.yellow(
