@@ -82,37 +82,37 @@ This command will populate `path/to/output/dir` with JS bundle files whose names
 When the build process finishes, the `bin/brigade` command prints a tree of JSON to STDOUT. For example:
 
     { "core": {
-        "file": "61a2d165baf797cefeb374a010ad3d15ffa73a09.js",
+        "file": "core.15d6ed74ab1a40f29f5e.js",
         "then": {
           "third-party": {
-            "file": "3c8bcc25cdf32024868707259892abcdd89f0dcc.js",
+            "file": "third-party.78927357155b3e55f0b1.js",
             "then": {
               "login": {
-                "file": "f3b9440dfe8a5bc1796792ce736478ac0afc74d5.js",
+                "file": "login.6e698d217160c1ddbb47.js",
                 "then": {
                   "tests/login": {
-                    "file": "76bfa5a904beec3d69a3f942d7e534bfaaad8b4d.js" }}},
+                    "file": "tests_login.cd6820058ed38512ebde.js" }}},
               "home": {
-                "file": "687016a47bd21ccf520418d25f954a7807b161ab.js",
+                "file": "home.bdffb47d95c4ad6edd7a.js",
                 "then": {
                   "tests/home": {
-                    "file": "925557fc996df73a4aac46266ba7c3fb90b0c530.js" }}},
+                    "file": "tests_home.48e890f579c7160e47e8.js" }}},
               "settings": {
-                "file": "9203cfa9f05aa7355a8b9779229b70c580881c94.js",
+                "file": "settings.ea505650304d1ad7c68a.js",
                 "then": {
                   "tests/settings": {
-                    "file": "e77654d2f995cde56c3c1859fa967e3471b0f122.js" }}}}}}},
+                    "file": "tests_settings.11ca33651f3334078eff.js" }}}}}}},
       "widget/common": {
-        "file": "6bcb66751c26c485978a06a4d23f3fcb8655eb04.js",
+        "file": "widget_common.a270fa174f84d950ad95.js",
         "then": {
           "widget/follow": {
-            "file": "baedf19657edde944e32f8273e5ac7bc9f887fe5.js" },
+            "file": "widget_follow.070457f9c99659083efa.js" },
           "widget/gallery": {
-            "file": "192bbd2125958aa5c58c1d5aca72484d339558f8.js" },
+            "file": "widget_gallery.2ffb716b0c2228601044.js" },
           "widget/share": {
-            "file": "bd24e1167130b09c29db212ffd31d73e0f03987e.js" }}},
+            "file": "widget_share.9ea99dc4fe5cb0d59ea0.js" }}},
       "widget/share": {
-        "file": "8627eba2e11991cc42ba30352c6f81032b3d9e2d.js" }}
+        "file":"widget_share.b5397410289ca7c62298.js" }}
 
 Although this may look like a wall of text, it has a very regular structure that is easy to manipulate with code. The value associated with each key of the schema has been replaced with an object literal that has a "file" property and, if the bundle has any descendants, a "then" property that refers to its child properties.
 
