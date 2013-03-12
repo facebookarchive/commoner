@@ -9,6 +9,7 @@ var ModuleReader = require("./lib/reader").ModuleReader;
 var BundleWriter = require("./lib/writer").BundleWriter;
 var Pipeline = require("./lib/pipeline").Pipeline;
 var util = require("./lib/util");
+var log = util.log;
 
 var versionP = util.readJsonFileP(
     path.join(__dirname, "package.json")
@@ -47,7 +48,7 @@ Bp.cliBuildP = function(version) {
         program.watch
     ).on("changed", function(file) {
         if (program.watch) {
-            log.err(util.yellow(file + " changed; rebuilding..."));
+            log.err(file + " changed; rebuilding...", "yellow");
             rebuild();
         }
     });
@@ -71,7 +72,7 @@ Bp.cliBuildP = function(version) {
             log.out(JSON.stringify(tree));
         })["catch"](function(err) {
             rebuild.ing = false;
-            log.err(util.red(err.stack));
+            log.err(err.stack);
         });
     }
 
@@ -85,17 +86,6 @@ function absolutePath(workingDir, pathToJoin) {
         pathToJoin = path.join(workingDir, pathToJoin);
     return pathToJoin;
 }
-
-// TODO Move this into lib/util.js.
-var log = {
-    out: function(text) {
-        process.stdout.write(text + "\n");
-    },
-
-    err: function(text) {
-        process.stderr.write(text + "\n");
-    }
-};
 
 function lockOutputDirP(outputDir) {
     return util.mkdirP(outputDir).then(function(dir) {
@@ -121,9 +111,10 @@ function getConfigP(workingDir, configFile) {
     configFile = absolutePath(workingDir, configFile);
 
     if (configFile === stdin) {
-        log.err(util.yellow(
+        log.err(
             "Expecting configuration from STDIN (pass --config <file> " +
-            "if stuck here)..."));
+            "if stuck here)...",
+            "yellow");
         return util.readJsonFromStdinP();
     }
 
