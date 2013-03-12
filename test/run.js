@@ -39,10 +39,8 @@ function waitForHelpers(t, helperP) {
     ]).done(t.finish.bind(t));
 }
 
-exports.testModuleReader = function(t, assert) {
-    var reader = new ModuleReader(debugContext, [getSourceP], []);
-
-    reader.readModuleP("home").then(function(home) {
+function checkHome(assert, home) {
+    return Q.resolve(home).then(function(home) {
         assert.strictEqual(home.id, "home");
         assert.strictEqual(typeof home.source, "string");
         assert.notEqual(home.source.indexOf("exports"), -1);
@@ -51,7 +49,41 @@ exports.testModuleReader = function(t, assert) {
     }).invoke("getRequiredP").then(function(reqs) {
         assert.strictEqual(reqs.length, 1);
         assert.strictEqual(reqs[0].id, "assert");
-    }).done(t.finish.bind(t));
+    });
+}
+
+exports.testModuleReader = function(t, assert) {
+    var reader = new ModuleReader(debugContext, [getSourceP], []);
+    var homeP = reader.readModuleP("home");
+    checkHome(assert, homeP).done(t.finish.bind(t));
+};
+
+exports.testMissingModuleWarning = function(t, assert) {
+    function helperP(context) {
+        var reader = new ModuleReader(context, [getSourceP], []);
+        var id = "this/module/should/not/exist";
+        return reader.readModuleP(id).then(function(module) {
+            assert.strictEqual(module.id, id);
+            assert.notEqual(module.source.indexOf("throw new Error"), -1);
+        });
+    }
+
+    waitForHelpers(t, helperP);
+};
+
+exports.testSkipFailingResolvers = function(t, assert) {
+    var reader = new ModuleReader(debugContext, [function(id) {
+        return this.makePromise(function(callback) {
+            process.nextTick(function() {
+                callback(new Error("bad thing happen"));
+            });
+        });
+    }, function(id) {
+        throw new Error("superbad situation");
+    }, getSourceP], []);
+
+    var homeP = reader.readModuleP("home");
+    checkHome(assert, homeP).done(t.finish.bind(t));
 };
 
 exports.testReaderCaching = function(t, assert) {
