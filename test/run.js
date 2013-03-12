@@ -97,6 +97,22 @@ exports.testSimpleSchema = function(t, assert) {
     waitForHelpers(t, helperP);
 };
 
+function checkTree(assert, schema, tree) {
+    var aks = Object.keys(schema);
+    assert.deepEqual(aks, Object.keys(tree));
+
+    aks.forEach(function(id) {
+        var sVal = schema[id];
+        var tVal = tree[id];
+        assert.ok(tVal.file);
+        if (tVal.then) {
+            checkTree(assert, sVal, tVal.then);
+        } else {
+            assert.deepEqual(sVal, {});
+        }
+    });
+}
+
 exports.testComplexSchema = function(t, assert) {
     var schema = {
         "core": {
@@ -112,26 +128,51 @@ exports.testComplexSchema = function(t, assert) {
         }
     };
 
-    function traverse(a, b) {
-        var aks = Object.keys(a);
-        assert.deepEqual(aks, Object.keys(b));
-
-        aks.forEach(function(id) {
-            var aVal = a[id];
-            var bVal = b[id];
-            assert.ok(bVal.file);
-            if (bVal.then) {
-                traverse(aVal, bVal.then);
-            } else {
-                assert.deepEqual(aVal, {});
-            }
+    function helperP(context) {
+        var pipeline = makePipeline(context).setSchema(schema);
+        return pipeline.getTreeP().then(function(tree) {
+            checkTree(assert, schema, tree);
         });
+    }
+
+    waitForHelpers(t, helperP);
+};
+
+exports.testSchemaWithEmptyBundles = function(t, assert) {
+    var schema = {
+        "core": {
+            "home": {
+                "assert": {
+                    "settings": {}
+                }
+            },
+            "assert": {
+                "home": {}
+            }
+        }
+    };
+
+    function assertNotEmpty(entry) {
+        assert.ok(entry);
+        assert.strictEqual(typeof entry.empty, "undefined");
+    }
+
+    function assertEmpty(entry) {
+        assert.ok(entry);
+        assert.strictEqual(entry.empty, true);
     }
 
     function helperP(context) {
         var pipeline = makePipeline(context).setSchema(schema);
+
         return pipeline.getTreeP().then(function(tree) {
-            traverse(schema, tree);
+            assertNotEmpty(tree.core);
+            assertNotEmpty(tree.core.then.home);
+            assertEmpty(tree.core.then.home.then.assert);
+            assertNotEmpty(tree.core.then.home.then.assert.then.settings);
+            assertNotEmpty(tree.core.then.assert);
+            assertNotEmpty(tree.core.then.assert.then.home);
+            checkTree(assert, schema, tree);
         });
     }
 
