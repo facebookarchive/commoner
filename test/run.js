@@ -276,9 +276,9 @@ exports.testBundle = function(t, assert) {
     waitForHelpers(t, helperP);
 };
 
-function writeAndCheckExistsP(writer, module) {
+function writeAndCheckExistsP(writer, bundleP) {
     var deferred = Q.defer();
-    writer.writeP(module).then(function(fileName) {
+    writer.writeBundleP(bundleP).then(function(fileName) {
         var filePath = path.join(outputDir, fileName);
         fs.exists(filePath, function(exists) {
             deferred.resolve(exists);
