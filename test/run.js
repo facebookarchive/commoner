@@ -211,6 +211,52 @@ exports.testSchemaWithEmptyBundles = function(t, assert) {
     waitForHelpers(t, helperP);
 };
 
+exports.testRootArraySchemaSyntax = function(t, assert) {
+    var rootsFile = path.join(sourceDir, "roots.json");
+    var rootsP = util.readJsonFileP(rootsFile);
+
+    function deepKeys(tree) {
+        if (typeof tree !== "object")
+            return [];
+
+        var keys = Object.keys(tree);
+
+        keys.forEach(function(key) {
+            keys.push.apply(keys, deepKeys(tree[key].then));
+        });
+
+        return keys;
+    }
+
+    function uniq(list) {
+        var seen = {};
+        var result = [];
+        list.forEach(function(str) {
+            if (seen[str] !== true) {
+                seen[str] = true;
+                result.push(str);
+            }
+        });
+        return result;
+    }
+
+    function helperP(context) {
+        return rootsP.then(function(roots) {
+            var pipeline = makePipeline(context).setSchema(roots);
+            return pipeline.getTreeP().then(function(tree) {
+                var keys = deepKeys(tree);
+                var sortedRoots = roots.slice(0).sort();
+                assert.ok(keys.length > sortedRoots.length);
+                assert.strictEqual(keys.length, Math.pow(2, roots.length) - 1);
+                assert.deepEqual(Object.keys(tree).sort(), sortedRoots);
+                assert.deepEqual(uniq(keys).sort(), sortedRoots);
+            });
+        });
+    }
+
+    waitForHelpers(t, helperP);
+};
+
 exports.testBundle = function(t, assert) {
     function helperP(context) {
         var reader = new ModuleReader(context, [getSourceP], []);
