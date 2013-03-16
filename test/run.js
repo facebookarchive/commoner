@@ -314,7 +314,7 @@ exports.testBundleWriter = function(t, assert) {
 
 exports.testGrepP = function(t, assert) {
     Q.all([
-        watcher.grepP("@providesModule\\s\\+\\S\\+"),
+        watcher.grepP("@providesModule\\s+\\S+"),
         debugContext.getProvidedP()
     ]).spread(function(pathToMatch, valueToPath) {
         assert.deepEqual(pathToMatch, {
