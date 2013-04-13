@@ -34,6 +34,7 @@ Bp.cliBuildP = function(version) {
     program.version(version)
         .option("-s, --schema <file>", "Schema file")
         .option("-o, --output-dir <directory>", "Output directory")
+        .option("-n, --no-bundles", "Skip generating bundles (only generate CommonJS files)")
         .option("-c, --config [file]", "JSON configuration file (no file means STDIN)")
         .option("-w, --watch", "Continually rebuild")
         .parse(process.argv.slice(0));
@@ -57,7 +58,8 @@ Bp.cliBuildP = function(version) {
         watcher,
         lockOutputDirP(outputDir),
         util.readJsonFileP(schemaFile),
-        getConfigP(workingDir, program.config)
+        getConfigP(workingDir, program.config),
+        !program.bundles
     ]);
 
     var buildP = this.buildP.bind(this);
@@ -121,12 +123,12 @@ function getConfigP(workingDir, configFile) {
     return util.readJsonFileP(configFile);
 }
 
-Bp.buildP = function(watcher, outputDir, schema, config) {
+Bp.buildP = function(watcher, outputDir, schema, config, noBundles) {
     assert.ok(watcher instanceof Watcher);
     var cbs = this.callbacks;
     var context = new BuildContext(config, watcher, outputDir);
     var reader = new ModuleReader(context, cbs.source, cbs.module);
-    var writer = new BundleWriter(context, cbs.bundle);
+    var writer = noBundles ? null : new BundleWriter(context, cbs.bundle);
     var pipeline = new Pipeline(context, reader, writer);
     return pipeline.setSchema(schema).getTreeP();
 };
