@@ -15,7 +15,7 @@
     "packager",
     "install"
   ],
-  "version": "0.4.13",
+  "version": "0.4.14",
   "homepage": "http://github.com/benjamn/brigade",
   "repository": {
     "type": "git",
