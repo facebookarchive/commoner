@@ -1,3 +1,7 @@
+<blink>**CAVEAT CODER**: This README is outdated and pertains to
+[Brigade](https://github.com/benjamn/brigade), an earlier project from
+which Commoner was derived.</blink>
+
 Brigade
 ---
 Brigade flexibly and efficiently bundles CommonJS modules for delivery to a web browser by
