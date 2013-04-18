@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-require("brigade").source(function(id) {
+require("commoner").resolve(function(id) {
     var context = this;
     return context.getProvidedP().then(function(idToPath) {
         if (idToPath.hasOwnProperty(id))
