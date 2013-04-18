@@ -3,27 +3,26 @@
     "name": "Ben Newman",
     "email": "bn@cs.stanford.edu"
   },
-  "name": "brigade",
-  "description": "Bucket brigade for bundling browser modules",
+  "name": "commoner",
+  "description": "Simple tool for translating any dialect of JavaScript to Node-readable CommonJS modules",
   "keywords": [
     "modules",
     "require",
     "commonjs",
     "exports",
-    "browser",
-    "packaging",
-    "packager",
-    "install"
+    "brigade",
+    "browserify",
+    "stitch"
   ],
   "version": "0.4.14",
-  "homepage": "http://github.com/benjamn/brigade",
+  "homepage": "http://github.com/benjamn/brigade/tree/commoner",
   "repository": {
     "type": "git",
-    "url": "git://github.com/benjamn/brigade.git"
+    "url": "git://github.com/benjamn/brigade.git#commoner"
   },
   "main": "main.js",
   "bin": {
-    "brigade": "./bin/brigade"
+    "brigade": "./bin/commonize"
   },
   "scripts": {
     "test": "whiskey test/run.js"
@@ -31,9 +30,7 @@
   "dependencies": {
     "q": ">= 0.9.1",
     "commander": ">= 1.1.1",
-    "uglify-js": ">= 2.2.4",
-    "mkdirp": ">= 0.3.5",
-    "install": ">= 0.1.7"
+    "mkdirp": ">= 0.3.5"
   },
   "optionalDependencies": {
     "whiskey": "0.6.x"
