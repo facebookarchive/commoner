@@ -2,10 +2,21 @@
 
 require("commoner").resolve(function(id) {
     var context = this;
+
     return context.getProvidedP().then(function(idToPath) {
+        // If a module declares its own identifier using @providesModule
+        // then that identifier will be a key in the idToPath object.
         if (idToPath.hasOwnProperty(id))
             return context.readFileP(idToPath[id]);
     });
+
 }, function(id) {
+    // Otherwise assume the identifier maps directly to a filesystem path.
     return this.readFileP(id + ".js");
+
+}).process(function(id, source) {
+    // As a simple example of a processing step, append ";//*/" to the
+    // end of the source to terminate any ambiguous statements or unclosed
+    // multi-line comments.
+    return source + ";//*/";
 });
