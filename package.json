@@ -14,7 +14,7 @@
     "browserify",
     "stitch"
   ],
-  "version": "0.5.0",
+  "version": "0.5.1",
   "homepage": "http://github.com/benjamn/commoner",
   "repository": {
     "type": "git",

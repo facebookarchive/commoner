@@ -1,14 +1,15 @@
 Commoner
 ---
 
-Commoner flexibly and efficiently transpiles any dialect of JavaScript
-into a directory structure of Node-compatible CommonJS module files.
+Commoner makes it easy to write scripts that flexibly and efficiently
+transpile any dialect of JavaScript into a directory structure of
+Node-compatible CommonJS module files.
 
 This task is made possible by
 
   1. a declarative syntax for defining how module source code should be
      found and processed,
-  2. using [promises](https://github.com/kriskowal/q) to manage an
+  2. the use of [promises](https://github.com/kriskowal/q) to manage an
      asynchronous build pipeline, and
   3. never rebuilding modules that have already been built.
 
@@ -19,10 +20,11 @@ static file server, or bundled together using a tool such as
 browser.
 
 Commoner was derived from an earlier, more opinionated tool called
-[Brigade](https://github.com/benjamn/brigade) that provided a means of
-packaging modules together into multiple non-overlapping bundles. Commoner
-grew out of the realization that many tools already exist for bundling
-CommonJS modules, but fewer tools focus on getting to that point.
+[Brigade](https://github.com/benjamn/brigade) that provided additional
+support for packaging modules together into multiple non-overlapping
+bundles. Commoner grew out of the realization that many tools already
+exist for bundling CommonJS modules, but fewer tools focus on getting to
+that point.
 
 Installation
 ---
@@ -53,42 +55,43 @@ Here's the output of `bin/commonize --help`:
       -w, --watch          Continually rebuild
 
 In a single sentence: the `commonize` command finds modules with the given
-identifiers in the source directory and places a processed copy of each
-file into the output directory, along with processed copies of all
-its transitive dependencies.
+identifiers `id1`, `id2`, ... in the source directory and places a
+processed copy of each module into the output directory, along with
+processed copies of all required modules.
 
 Output
 ---
 
-Commoner prints various status messages to STDERR, so that you can see
-what it's doing, or figure out why it's not doing what you want.
+Commoner prints various status messages to `STDERR`, so that you can see
+what it's doing, or figure out why it's not doing what you thought it
+would do.
 
-The only information it prints to STDOUT is a JSON array of module
+The only information it prints to `STDOUT` is a JSON array of module
 identifiers, which includes the identifiers passed on the command line and
 all their dependencies. This array contains no duplicates.
 
 Internally, each module that Commoner generates has a hash computed from
 the module's identifier, source code, and processing steps. Since this
-hash can be computed before processing takes place, Commoner can avoid
-processing a module if it has ever previously processed the same module in
-the same way.
+hash can be computed before processing takes place, Commoner is able to
+avoid processing a module if it has ever previously processed the same
+module in the same way.
 
 If you dig into the contents of the output directory using `ls -la`,
 you'll see a subdirectory called `.module-cache/`, which contains a bunch
 of files with names like `9ffc5c853aac07bc106da1dc1b2486903ca688bf.js`.
 When Commoner is about to process a module, it checks its hash against the
 file names in this directory. If no match is found, processing procedes
-and the resulting file is written to `.module-cache/ with a new hash. Once
-the appropriate hash file is present in `.module-cache/`, Commoner merely
-creates a hard link between the hash file and a file with a more
-meaningful name outside `.module-cache/`.
+and the resulting file is written to `.module-cache/` with a new
+hash. Once the appropriate hash file is present in `.module-cache/`,
+Commoner merely creates a hard link between the hash file and a file with
+a more meaningful name outside `.module-cache/`.
 
 When you pass the `--watch` flag to `bin/commonize`, Commoner avoids
 exiting after the first build and instead watches for changes to
 previously read files, printing a new JSON array of module identifiers to
-STDOUT each time rebuilding finishes. Thanks to the caching of processed
-modules, rebuilding takes time roughly proportional to the number of
-modified files.
+`STDOUT` each time rebuilding finishes. Thanks to the caching of processed
+modules, the time taken to rebuild is roughly proportional to the number
+of modified files.
 
 Customization
 ---
@@ -219,10 +222,11 @@ a promise is to call `this.makePromise` in the following style:
     }, function(id) {
         return this.readFileP(id + ".js");
     }).process(function(id, source) {
-        if (isLess(id))
+        if (isLess(id)) {
             return this.makePromise(function(nodeStyleCallback) {
                 compileLessToJs(source, nodeStyleCallback);
             });
+        }
         return source;
     });
 
@@ -233,10 +237,10 @@ a promise is to call `this.makePromise` in the following style:
     }
 
 And we're done! This example was admittedly pretty involved, but if you
-followed it to the end you now know everything you need know to write
+followed it to the end you now have all the knowledge you need to write
 source files like `sidebar.less` and require them from other modules by
-invoking `require("sidebar.less")`. (By the way, embedding dynamic CSS
-modules in your JavaScript turns out to be an excellent idea.)
+invoking `require("sidebar.less")`. (And, by the way, embedding dynamic
+CSS modules in your JavaScript turns out to be an excellent idea.)
 
 
 Configuration
@@ -248,17 +252,14 @@ dynamic values to the same code.
 
 For that kind of configuration, you don't need to modify your Commoner
 script at all, because Commoner scripts accept a flag called `--config`
-that can either specify a JSON file of configuration options or, if
-`--config` is given without a file name, read a string of JSON from STDIN.
+that can either specify a JSON file or (if `--config` is given without a
+file name) read a string of JSON from `STDIN`.
 
 Examples:
 
     bin/commonize source/ output/ main --config release.json
-
     bin/commonize source/ output/ main --config debug.json
-
     echo '{"debug":false}' | bin/commonize source/ output/ main --config
-
     echo '{"debug":true}' | bin/commonize source/ output/ main --config /dev/stdin
 
 This configuration object is exposed to the `.resolve` and `.process`
@@ -274,7 +275,7 @@ minification as a processing step, you might do it like this:
     });
 
 Perhaps the coolest thing about the configuration object is that Commoner
-generates a recursive hash of all its properties and their values, which
-is then incorporated into every module hash. This means that two modules
-with the same identifier and identical source code and processing steps
-will have distinct hashes if built with different configuration objects.
+generates a recursive hash of all its properties and their values which is
+then incorporated into every module hash. This means that two modules with
+the same identifier and identical source code and processing steps will
+have distinct hashes if built using different configuration objects.
