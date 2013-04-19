@@ -23,8 +23,8 @@ Commoner was derived from an earlier, more opinionated tool called
 [Brigade](https://github.com/benjamn/brigade) that provided additional
 support for packaging modules together into multiple non-overlapping
 bundles. Commoner grew out of the realization that many tools already
-exist for bundling CommonJS modules, but fewer tools focus on getting to
-that point.
+exist for bundling CommonJS modules, but that fewer tools focus on getting
+to that point.
 
 Installation
 ---
