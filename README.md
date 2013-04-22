@@ -45,7 +45,7 @@ Usage
 
 Here's the output of `bin/commonize --help`:
 
-    Usage: commonize [options] <source directory> <output directory> id1 [id2 [id3 ...]]
+    Usage: commonize [options] <source directory> <output directory> <module ID> [<module ID> [<module ID> ...]]
 
     Options:
 
@@ -55,9 +55,9 @@ Here's the output of `bin/commonize --help`:
       -w, --watch          Continually rebuild
 
 In a single sentence: the `commonize` command finds modules with the given
-identifiers `id1`, `id2`, ... in the source directory and places a
-processed copy of each module into the output directory, along with
-processed copies of all required modules.
+module identifiers in the source directory and places a processed copy of
+each module into the output directory, along with processed copies of all
+required modules.
 
 Output
 ---
