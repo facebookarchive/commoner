@@ -20,11 +20,12 @@ static file server, or bundled together using a tool such as
 [Stitch](https://github.com/sstephenson/stitch) for delivery to a web
 browser.
 
-Commoner also takes care to rewrite all `require` calls to use relative
-module identifiers, so that the output files can be installed into any
-subdirectory of a larger project, and external tools do not have to give
-special treatment to top-level modules (or even know which modules are
-top-level and which are nested).
+Commoner also takes care to rewrite all `require` calls to use [relative module
+identifiers](http://wiki.commonjs.org/wiki/Modules/1.1#Module_Identifiers),
+so that the output files can be installed into any subdirectory of a
+larger project, and external tools do not have to give special treatment
+to top-level modules (or even know which modules are top-level and which
+are nested).
 
 Commoner was derived from an earlier, more opinionated tool called
 [Brigade](https://github.com/benjamn/brigade) that provided additional
