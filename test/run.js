@@ -41,7 +41,7 @@ function checkHome(assert, home) {
         assert.strictEqual(home.id, "home");
         assert.strictEqual(typeof home.source, "string");
         assert.notEqual(home.source.indexOf("exports"), -1);
-        assert.strictEqual(home.source.indexOf('require("assert");'), 0);
+        assert.strictEqual(home.source.indexOf('require("./assert");'), 0);
         return home;
     }).invoke("getRequiredP").then(function(reqs) {
         assert.strictEqual(reqs.length, 1);
@@ -144,4 +144,42 @@ exports.testMakePromise = function(t, assert) {
     }
 
     waitForHelpers(t, helperP);
+};
+
+exports.testRelativize = function(t, assert) {
+    var relativizeP = require("../lib/relative").relativizeP;
+
+    function helperP(requiredId, expected) {
+        return relativizeP(
+            "some/deeply/nested/module",
+            "require(" + JSON.stringify(requiredId) + ")"
+        ).then(function(source) {
+            assert.strictEqual(
+                source,
+                "require(" + JSON.stringify(expected) + ")"
+            );
+        });
+    }
+
+    Q.all([
+        helperP("another/nested/module",
+                "../../../another/nested/module"),
+        helperP("../../buried/module/./file",
+                "../../buried/module/file"),
+        helperP("../../buried/module/../file",
+                "../../buried/file"),
+        helperP("./same/level",
+                "./same/level"),
+        helperP("./same/./level",
+                "./same/level"),
+        helperP("./same/../level",
+                "./level"),
+        helperP("some/deeply/buried/treasure",
+                "../buried/treasure"),
+        helperP("./file", "./file"),
+        helperP("./file/../../../module",
+                "../../module"),
+        helperP("./file/../../module",
+                "../module")
+    ]).done(t.finish.bind(t));
 };

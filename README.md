@@ -15,9 +15,16 @@ This task is made possible by
 
 The output files can be required seamlessly by Node, or served by any
 static file server, or bundled together using a tool such as
-[Browserify](https://github.com/substack/node-browserify) or
+[Browserify](https://github.com/substack/node-browserify),
+[WrapUp](https://github.com/kamicane/wrapup), or
 [Stitch](https://github.com/sstephenson/stitch) for delivery to a web
 browser.
+
+Commoner also takes care to rewrite all `require` calls to use relative
+module identifiers, so that the output files can be installed into any
+subdirectory of a larger project, and external tools do not have to give
+special treatment to top-level modules (or even know which modules are
+top-level and which are nested).
 
 Commoner was derived from an earlier, more opinionated tool called
 [Brigade](https://github.com/benjamn/brigade) that provided additional
