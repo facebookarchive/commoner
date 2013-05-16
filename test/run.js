@@ -186,3 +186,19 @@ exports.testRelativize = function(t, assert) {
                 "../module")
     ]).done(t.finish.bind(t));
 };
+
+exports.testFlatten = function(t, assert) {
+    function check(input, expected) {
+        var flat = util.flatten(input);
+        assert.deepEqual(flat, expected);
+    }
+
+    check(1, 1);
+    check([[],,[],1, 2], [1, 2]);
+    check([[[[[[]]]]]], []);
+    check([[1,[[[[2]]],3]]], [1, 2, 3]);
+    check([[1],[[2]],[[[3]]]], [1, 2, 3]);
+    check([,,,], []);
+
+    t.finish();
+};
