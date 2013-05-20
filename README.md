@@ -57,15 +57,23 @@ Here's the output of `bin/commonize --help`:
 
     Options:
 
-      -h, --help           output usage information
-      -V, --version        output the version number
-      -c, --config [file]  JSON configuration file (no file means STDIN)
-      -w, --watch          Continually rebuild
+      -h, --help                           output usage information
+      -V, --version                        output the version number
+      -c, --config [file]                  JSON configuration file (no file means STDIN)
+      -w, --watch                          Continually rebuild
+      -x, --extension <js | coffee | ...>  File extension to assume when resolving module identifiers
+      --cache-dir <directory>              Alternate directory to use for disk cache
 
 In a single sentence: the `commonize` command finds modules with the given
 module identifiers in the source directory and places a processed copy of
 each module into the output directory, along with processed copies of all
 required modules.
+
+If you do not provide any module identifiers, `commonize` will process all
+files that it can find under the source directory that have the preferred
+file extension (`.js` by default). If your source files have a file
+extension other than `.js`, use the `-x` or `--extension` option to
+specify it. For example, `--extension coffee` to find `.coffee` files.
 
 Output
 ---
@@ -84,15 +92,17 @@ hash can be computed before processing takes place, Commoner is able to
 avoid processing a module if it has ever previously processed the same
 module in the same way.
 
-If you dig into the contents of the output directory using `ls -la`,
-you'll see a subdirectory called `.module-cache/`, which contains a bunch
-of files with names like `9ffc5c853aac07bc106da1dc1b2486903ca688bf.js`.
-When Commoner is about to process a module, it checks its hash against the
-file names in this directory. If no match is found, processing procedes
-and the resulting file is written to `.module-cache/` with a new
-hash. Once the appropriate hash file is present in `.module-cache/`,
-Commoner merely creates a hard link between the hash file and a file with
-a more meaningful name outside `.module-cache/`.
+If you dig into [the
+code](https://github.com/benjamn/commoner/blob/master/lib/context.js#L80),
+you'll find that Commoner maintains a cache directory (by default,
+`~/.commoner/module-cache/`) containing files with names like
+`9ffc5c853aac07bc106da1dc1b2486903ca688bf.js`.  When Commoner is about to
+process a module, it checks its hash against the file names in this
+directory. If no match is found, processing procedes and the resulting
+file is written to the cache directory with a new hash. If the appropriate
+hash file is already present in the cache directory, however, Commoner
+merely creates a hard link between the hash file and a file with a more
+meaningful name outside of the cache directory.
 
 When you pass the `--watch` flag to `bin/commonize`, Commoner avoids
 exiting after the first build and instead watches for changes to
@@ -121,7 +131,9 @@ similar scripts yourself. Let's have a look:
 
     }, function(id) {
         // Otherwise assume the identifier maps directly to a filesystem path.
-        return this.readFileP(id + ".js");
+        // The readModuleP method simply appends the preferred file extension
+        // (usually .js) to the given module identifier and opens that file.
+        return this.readModuleP(id);
     });
 
 The scriptable interface of the `commoner` module abstracts away many of
@@ -149,7 +161,7 @@ even simpler script:
     #!/usr/bin/env node
 
     require("commoner").resolve(function(id) {
-        return this.readFileP(id + ".js");
+        return this.readModuleP(id);
     });
 
 The point is, it's entirely up to you to define how module identifiers are
@@ -170,7 +182,7 @@ to `.less` files:
         if (isLess(id))
             return this.readFileP(id);
     }, function(id) {
-        return this.readFileP(id + ".js");
+        return this.readModuleP(id);
     });
 
     function isLess(id) {
@@ -188,7 +200,7 @@ transformed into plain old CommonJS, and for that we need
         if (isLess(id))
             return this.readFileP(id);
     }, function(id) {
-        return this.readFileP(id + ".js");
+        return this.readModuleP(id);
     }).process(function(id, source) {
         if (isLess(id))
             return compileLessToJs(source);
@@ -228,7 +240,7 @@ a promise is to call `this.makePromise` in the following style:
         if (isLess(id))
             return this.readFileP(id);
     }, function(id) {
-        return this.readFileP(id + ".js");
+        return this.readModuleP(id);
     }).process(function(id, source) {
         if (isLess(id)) {
             return this.makePromise(function(nodeStyleCallback) {
@@ -275,7 +287,7 @@ callbacks as `this.config`. So, for example, if you wanted to implement
 minification as a processing step, you might do it like this:
 
     require("commoner").resolve(function(id) {
-        return this.readFileP(id + ".js");
+        return this.readModule(id);
     }).process(function(id, source) {
         if (this.config.debug)
             return source;
