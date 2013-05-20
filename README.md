@@ -53,7 +53,7 @@ Usage
 
 Here's the output of `bin/commonize --help`:
 
-    Usage: commonize [options] <source directory> <output directory> <module ID> [<module ID> [<module ID> ...]]
+    Usage: commonize [options] <source directory> <output directory> [<module ID> [<module ID> ...]]
 
     Options:
 
