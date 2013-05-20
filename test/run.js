@@ -25,6 +25,12 @@ var releaseContext = new BuildContext({
     debug: false
 }, watcher, outputDir, []);
 
+debugContext.setCacheDirectory(path.join(
+    outputDir, ".debug-module-cache"));
+
+releaseContext.setCacheDirectory(path.join(
+    outputDir, ".release-module-cache"));
+
 function getSourceP(id) {
     return this.readFileP(id + ".js");
 }
