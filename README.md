@@ -93,7 +93,7 @@ avoid processing a module if it has ever previously processed the same
 module in the same way.
 
 If you dig into [the
-code](https://github.com/benjamn/commoner/blob/master/lib/context.js#L80),
+code](https://github.com/benjamn/commoner/blob/5e7f65cab2/lib/context.js#L94),
 you'll find that Commoner maintains a cache directory (by default,
 `~/.commoner/module-cache/`) containing files with names like
 `9ffc5c853aac07bc106da1dc1b2486903ca688bf.js`.  When Commoner is about to
