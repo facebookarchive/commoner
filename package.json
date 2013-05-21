@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "q": ">= 0.9.1",
-    "ast-types": ">= 0.2.8",
     "recast": ">= 0.3.3",
     "commander": ">= 1.1.1",
     "glob": ">= 3.2.1",
