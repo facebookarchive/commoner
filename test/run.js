@@ -153,6 +153,7 @@ exports.testMakePromise = function(t, assert) {
 };
 
 exports.testRelativize = function(t, assert) {
+    var moduleId = "some/deeply/nested/module";
     var relativizeP = require("../lib/relative").relativizeP;
 
     function makeSource(id) {
@@ -162,8 +163,12 @@ exports.testRelativize = function(t, assert) {
     }
 
     function helperP(requiredId, expected) {
-        return relativizeP(
-            "some/deeply/nested/module",
+        assert.strictEqual(
+            util.relativize(moduleId, requiredId),
+            expected);
+
+        return processor(
+            moduleId,
             makeSource(requiredId)
         ).then(function(source) {
             assert.strictEqual(source, makeSource(expected));
