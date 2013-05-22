@@ -217,7 +217,7 @@ exports.testMakePromise = function(t, assert) {
 
 exports.testRelativize = function(t, assert) {
     var moduleId = "some/deeply/nested/module";
-    var relativizeP = require("../lib/relative").relativizeP;
+    var processor = require("../lib/relative").getProcessor(null);
 
     function makeSource(id) {
         var str = JSON.stringify(id);
