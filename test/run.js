@@ -168,13 +168,21 @@ exports.testProvidesModule = function(t, assert) {
         ], []);
 
         return Q.all([
-            reader.readMultiP([
-                "widget/share",
-                "WidgetShare"
+            Q.all([
+                reader.readModuleP("widget/share"),
+                reader.readModuleP("WidgetShare")
             ]).spread(function(ws1, ws2) {
                 assert.strictEqual(ws1.id, ws2.id);
                 assert.strictEqual(ws1.id, "WidgetShare");
                 assert.strictEqual(ws1, ws2);
+            }),
+
+            reader.readMultiP([
+                "widget/share",
+                "WidgetShare"
+            ]).then(function(modules) {
+                assert.strictEqual(modules.length, 1);
+                assert.strictEqual(modules[0].id, "WidgetShare");
             }),
 
             Q.all([
