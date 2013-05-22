@@ -31,8 +31,16 @@ debugContext.setCacheDirectory(path.join(
 releaseContext.setCacheDirectory(path.join(
     outputDir, ".release-module-cache"));
 
+function getProvidedP(id) {
+    var context = this;
+    return context.getProvidedP().then(function(idToPath) {
+        if (idToPath.hasOwnProperty(id))
+            return context.readFileP(idToPath[id]);
+    });
+}
+
 function getSourceP(id) {
-    return this.readFileP(id + ".js");
+    return this.readModuleP(id);
 }
 
 function waitForHelpers(t, helperP) {
@@ -124,6 +132,61 @@ exports.testGrepP = function(t, assert) {
             "WidgetShare": "widget/share.js"
         });
     }).done(t.finish.bind(t));
+};
+
+exports.testProvidesModule = function(t, assert) {
+    var code = arguments.callee.toString();
+
+    /**
+     * Look, Ma! A test function that uses itself as input!
+     * @providesModule
+     * @providesModule foo/bar
+     */
+
+    assert.strictEqual(
+        code.split("@provides" + "Module").length,
+        4);
+
+    assert.strictEqual(
+        debugContext.getProvidedId(code),
+        "foo/bar");
+
+    assert.strictEqual(
+        debugContext.getProvidedId(
+            "no at-providesModule, here"),
+        null);
+
+    /**
+     * Just to make sure we only pay attention to the first one.
+     * @providesModule ignored
+     */
+
+    function helper(context) {
+        var reader = new ModuleReader(context, [
+            getProvidedP,
+            getSourceP
+        ], []);
+
+        return Q.all([
+            reader.readMultiP([
+                "widget/share",
+                "WidgetShare"
+            ]).spread(function(ws1, ws2) {
+                assert.strictEqual(ws1.id, ws2.id);
+                assert.strictEqual(ws1.id, "WidgetShare");
+                assert.strictEqual(ws1, ws2);
+            }),
+
+            Q.all([
+                reader.getSourceP("widget/share"),
+                reader.getSourceP("WidgetShare")
+            ]).spread(function(source1, source2) {
+                assert.strictEqual(source1, source2);
+            })
+        ]);
+    }
+
+    waitForHelpers(t, helper);
 };
 
 exports.testMakePromise = function(t, assert) {
