@@ -208,3 +208,34 @@ exports.testFlatten = function(t, assert) {
 
     t.finish();
 };
+
+exports.testWriteFd = function(t, assert) {
+    var file = path.join(outputDir, "writeFdP.test.txt");
+
+    function check(content) {
+        function afterUnlink(err) {
+            return util.openExclusiveP(file).then(function(fd) {
+                return util.writeFdP(fd, content).then(function(written) {
+                    assert.strictEqual(content, written);
+                });
+            });
+        }
+
+        return function() {
+            return util.unlinkP(file).then(afterUnlink, afterUnlink);
+        };
+    }
+
+    Q.resolve("ignored")
+        .then(check("x"))
+        .then(check("x\ny"))
+        .then(check("x\r\ny"))
+        .then(check("\t\nx\t"))
+        .then(check("\ufeff")) // zero-width non-breaking space
+        .then(check("\u2603")) // snowman
+        .then(check("\ud83d\udc19")) // octopus
+        .fin(function() {
+            return util.unlinkP(file);
+        })
+        .done(t.finish.bind(t));
+};
