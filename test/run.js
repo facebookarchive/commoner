@@ -261,6 +261,65 @@ exports.testRelativize = function(t, assert) {
     ]).done(t.finish.bind(t));
 };
 
+exports.testGetCanonicalId = function(t, assert) {
+    function helperP(context) {
+        var reader = new ModuleReader(context, [
+            getProvidedP,
+            getSourceP
+        ], []);
+
+        return Q.all([
+            reader.getCanonicalIdP("widget/share"),
+            reader.getCanonicalIdP("WidgetShare"),
+            reader.readModuleP("widget/share").get("id"),
+            reader.readModuleP("WidgetShare").get("id")
+        ]).spread(function(ws1, ws2, ws3, ws4) {
+            assert.strictEqual(ws1, "WidgetShare");
+            assert.strictEqual(ws2, "WidgetShare");
+            assert.strictEqual(ws3, "WidgetShare");
+            assert.strictEqual(ws4, "WidgetShare");
+        });
+    }
+
+    waitForHelpers(t, helperP);
+};
+
+exports.testCanonicalRequires = function(t, assert) {
+    function helperP(context) {
+        assert.strictEqual(context.ignoreDependencies, false);
+
+        var reader = new ModuleReader(context, [
+            getProvidedP,
+            getSourceP
+        ], []);
+
+        return reader.readModuleP("widget/follow").then(function(follow) {
+            assert.strictEqual(follow.source.indexOf("widget/share"), -1);
+
+            assert.strictEqual(strCount(
+                'require("../WidgetShare")',
+                follow.source
+            ), 4);
+
+            assert.strictEqual(strCount(
+                'require("./gallery")',
+                follow.source
+            ), 2);
+
+            assert.strictEqual(strCount(
+                'require("../assert")',
+                follow.source
+            ), 2);
+        });
+    }
+
+    waitForHelpers(t, helperP);
+};
+
+function strCount(substring, string) {
+    return string.split(substring).length - 1;
+}
+
 exports.testFlatten = function(t, assert) {
     function check(input, expected) {
         var flat = util.flatten(input);
