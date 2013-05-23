@@ -31,8 +31,16 @@ debugContext.setCacheDirectory(path.join(
 releaseContext.setCacheDirectory(path.join(
     outputDir, ".release-module-cache"));
 
+function getProvidedP(id) {
+    var context = this;
+    return context.getProvidedP().then(function(idToPath) {
+        if (idToPath.hasOwnProperty(id))
+            return context.readFileP(idToPath[id]);
+    });
+}
+
 function getSourceP(id) {
-    return this.readFileP(id + ".js");
+    return this.readModuleP(id);
 }
 
 function waitForHelpers(t, helperP) {
@@ -126,6 +134,78 @@ exports.testGrepP = function(t, assert) {
     }).done(t.finish.bind(t));
 };
 
+exports.testProvidesModule = function(t, assert) {
+    var code = arguments.callee.toString();
+
+    /**
+     * Look, Ma! A test function that uses itself as input!
+     * @providesModule
+     * @providesModule foo/bar
+     */
+
+    assert.strictEqual(
+        code.split("@provides" + "Module").length,
+        4);
+
+    assert.strictEqual(
+        debugContext.getProvidedId(code),
+        "foo/bar");
+
+    assert.strictEqual(
+        debugContext.getProvidedId(
+            "no at-providesModule, here"),
+        null);
+
+    /**
+     * Just to make sure we only pay attention to the first one.
+     * @providesModule ignored
+     */
+
+    function helper(context) {
+        var reader = new ModuleReader(context, [
+            getProvidedP,
+            getSourceP
+        ], []);
+
+        return Q.all([
+            Q.all([
+                reader.readModuleP("widget/share"),
+                reader.readModuleP("WidgetShare")
+            ]).spread(function(ws1, ws2) {
+                assert.strictEqual(ws1.id, ws2.id);
+                assert.strictEqual(ws1.id, "WidgetShare");
+                assert.strictEqual(ws1, ws2);
+            }),
+
+            reader.readMultiP([
+                "widget/share",
+                "WidgetShare"
+            ]).then(function(modules) {
+                assert.strictEqual(modules.length, 1);
+                assert.strictEqual(modules[0].id, "WidgetShare");
+            }),
+
+            reader.readModuleP(
+                "widget/gallery"
+            ).then(function(gallery) {
+                return gallery.getRequiredP();
+            }).then(function(deps) {
+                assert.strictEqual(deps.length, 1);
+                assert.strictEqual(deps[0].id, "WidgetShare");
+            }),
+
+            Q.all([
+                reader.getSourceP("widget/share"),
+                reader.getSourceP("WidgetShare")
+            ]).spread(function(source1, source2) {
+                assert.strictEqual(source1, source2);
+            })
+        ]);
+    }
+
+    waitForHelpers(t, helper);
+};
+
 exports.testMakePromise = function(t, assert) {
     var error = new Error("test");
 
@@ -153,7 +233,8 @@ exports.testMakePromise = function(t, assert) {
 };
 
 exports.testRelativize = function(t, assert) {
-    var relativizeP = require("../lib/relative").relativizeP;
+    var moduleId = "some/deeply/nested/module";
+    var processor = require("../lib/relative").getProcessor(null);
 
     function makeSource(id) {
         var str = JSON.stringify(id);
@@ -162,8 +243,12 @@ exports.testRelativize = function(t, assert) {
     }
 
     function helperP(requiredId, expected) {
-        return relativizeP(
-            "some/deeply/nested/module",
+        assert.strictEqual(
+            util.relativize(moduleId, requiredId),
+            expected);
+
+        return processor(
+            moduleId,
             makeSource(requiredId)
         ).then(function(source) {
             assert.strictEqual(source, makeSource(expected));
@@ -192,6 +277,65 @@ exports.testRelativize = function(t, assert) {
                 "../module")
     ]).done(t.finish.bind(t));
 };
+
+exports.testGetCanonicalId = function(t, assert) {
+    function helperP(context) {
+        var reader = new ModuleReader(context, [
+            getProvidedP,
+            getSourceP
+        ], []);
+
+        return Q.all([
+            reader.getCanonicalIdP("widget/share"),
+            reader.getCanonicalIdP("WidgetShare"),
+            reader.readModuleP("widget/share").get("id"),
+            reader.readModuleP("WidgetShare").get("id")
+        ]).spread(function(ws1, ws2, ws3, ws4) {
+            assert.strictEqual(ws1, "WidgetShare");
+            assert.strictEqual(ws2, "WidgetShare");
+            assert.strictEqual(ws3, "WidgetShare");
+            assert.strictEqual(ws4, "WidgetShare");
+        });
+    }
+
+    waitForHelpers(t, helperP);
+};
+
+exports.testCanonicalRequires = function(t, assert) {
+    function helperP(context) {
+        assert.strictEqual(context.ignoreDependencies, false);
+
+        var reader = new ModuleReader(context, [
+            getProvidedP,
+            getSourceP
+        ], []);
+
+        return reader.readModuleP("widget/follow").then(function(follow) {
+            assert.strictEqual(follow.source.indexOf("widget/share"), -1);
+
+            assert.strictEqual(strCount(
+                'require("../WidgetShare")',
+                follow.source
+            ), 4);
+
+            assert.strictEqual(strCount(
+                'require("./gallery")',
+                follow.source
+            ), 2);
+
+            assert.strictEqual(strCount(
+                'require("../assert")',
+                follow.source
+            ), 2);
+        });
+    }
+
+    waitForHelpers(t, helperP);
+};
+
+function strCount(substring, string) {
+    return string.split(substring).length - 1;
+}
 
 exports.testFlatten = function(t, assert) {
     function check(input, expected) {
