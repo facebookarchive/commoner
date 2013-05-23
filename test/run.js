@@ -185,6 +185,15 @@ exports.testProvidesModule = function(t, assert) {
                 assert.strictEqual(modules[0].id, "WidgetShare");
             }),
 
+            reader.readModuleP(
+                "widget/gallery"
+            ).then(function(gallery) {
+                return gallery.getRequiredP();
+            }).then(function(deps) {
+                assert.strictEqual(deps.length, 1);
+                assert.strictEqual(deps[0].id, "WidgetShare");
+            }),
+
             Q.all([
                 reader.getSourceP("widget/share"),
                 reader.getSourceP("WidgetShare")
