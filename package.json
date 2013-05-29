@@ -15,6 +15,7 @@
     "stitch"
   ],
   "version": "0.6.8",
+  "license": "MIT",
   "homepage": "http://github.com/benjamn/commoner",
   "repository": {
     "type": "git",
