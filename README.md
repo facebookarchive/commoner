@@ -102,7 +102,7 @@ directory. If no match is found, processing procedes and the resulting
 file is written to the cache directory with a new hash. If the appropriate
 hash file is already present in the cache directory, however, Commoner
 merely creates a hard link between the hash file and a file with a more
-meaningful name outside of the cache directory.
+meaningful name in the output directory.
 
 When you pass the `--watch` flag to `bin/commonize`, Commoner avoids
 exiting after the first build and instead watches for changes to
