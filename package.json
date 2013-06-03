@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "q": ">= 0.9.1",
-    "recast": ">= 0.3.3",
+    "recast": "~0.4.1",
     "commander": ">= 1.1.1",
     "glob": ">= 3.2.1",
     "mkdirp": ">= 0.3.5",
