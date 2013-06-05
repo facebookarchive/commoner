@@ -383,3 +383,94 @@ exports.testWriteFd = function(t, assert) {
         })
         .done(t.finish.bind(t));
 };
+
+exports.testWatcherBasic = function(t, assert) {
+    var watcher = new Watcher(sourceDir);
+    var dummy = "dummy.js";
+    var dummyFile = path.join(sourceDir, dummy);
+    var changedCount = 0;
+    var waitCount = 0;
+
+    watcher.on("changed", function() {
+        changedCount += 1;
+    });
+
+    function waitForChangeP() {
+        waitCount += 1;
+        return util.makePromise(function(callback) {
+            watcher.on("changed", function(path) {
+                callback(null, path);
+            });
+        });
+    }
+
+    util.unlinkP(dummyFile).then(function() {
+        util.openExclusiveP(dummyFile).then(function(fd) {
+            return util.writeFdP(fd, "dummy");
+        });
+    }).then(function() {
+        return Q.all([
+            watcher.readFileP("home.js"),
+            watcher.readFileP(dummy)
+        ]);
+    }).then(function() {
+        assert.strictEqual(changedCount, 0);
+        return Q.all([
+            util.unlinkP(dummyFile),
+            waitForChangeP()
+        ]);
+    }).then(function() {
+        assert.strictEqual(changedCount, 1);
+        assert.strictEqual(waitCount, 1);
+        t.finish();
+    });
+};
+
+exports.testWatchDirectory = function(t, assert) {
+    var watcher = new Watcher(sourceDir);
+    var watchMe = "watchMe.js";
+    var changedCount = 0;
+    var waitCount = 0;
+
+    watcher.on("changed", function() {
+        changedCount += 1;
+    });
+
+    function waitForChangeP() {
+        waitCount += 1;
+        return util.makePromise(function(callback) {
+            watcher.once("changed", function(path) {
+                callback(null, path);
+            });
+        });
+    }
+
+    function write(content) {
+        return util.openFileP(watchMe).then(function(fd) {
+            util.writeFdP(fd, content);
+            return waitForChangeP();
+        });
+    }
+
+    util.unlinkP(watchMe).then(function() {
+        return watcher.readFileP(watchMe).then(function(source) {
+            assert.ok(false, "readFileP should have failed");
+        }, function(err) {
+            assert.strictEqual(err.code, "ENOENT");
+        });
+    }).then(function() {
+        return write("first");
+    }).then(function() {
+        return write("second");
+    }).then(function() {
+        util.unlinkP(watchMe);
+        return waitForChangeP();
+    }).then(function() {
+        return write("third");
+    }).fin(function() {
+        return util.unlinkP(watchMe);
+    }).done(function() {
+        assert.strictEqual(waitCount, changedCount);
+        t.finish();
+    });
+};
