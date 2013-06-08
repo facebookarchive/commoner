@@ -459,6 +459,7 @@ exports.testWatchDirectory = function(t, assert) {
             assert.strictEqual(err.code, "ENOENT");
         });
     }).then(function() {
+        assert.ok(false, "TODO testWatchDirectory times out here; fix this");
         return write("first");
     }).then(function() {
         return write("second");
