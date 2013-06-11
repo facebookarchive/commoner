@@ -31,6 +31,9 @@ debugContext.setCacheDirectory(path.join(
 releaseContext.setCacheDirectory(path.join(
     outputDir, ".release-module-cache"));
 
+debugContext.setRelativize(true);
+releaseContext.setRelativize(true);
+
 function getProvidedP(id) {
     var context = this;
     return context.getProvidedP().then(function(idToPath) {

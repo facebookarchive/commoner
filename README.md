@@ -20,7 +20,8 @@ static file server, or bundled together using a tool such as
 [Stitch](https://github.com/sstephenson/stitch) for delivery to a web
 browser.
 
-Commoner also takes care to rewrite all `require` calls to use [relative module
+If you pass the `--relativize` option, Commoner also takes care to rewrite
+all `require` calls to use [relative module
 identifiers](http://wiki.commonjs.org/wiki/Modules/1.1#Module_Identifiers),
 so that the output files can be installed into any subdirectory of a
 larger project, and external tools do not have to give special treatment
