@@ -129,7 +129,9 @@ exports.testGrepP = function(t, assert) {
         debugContext.getProvidedP()
     ]).spread(function(pathToMatch, valueToPath) {
         assert.deepEqual(pathToMatch, {
-            "widget/share.js": "@providesModule WidgetShare"
+            "widget/share.js": "@providesModule WidgetShare",
+            "widget/.bogus.js": "@providesModule WidgetShare",
+            "widget/bogus.js~": "@providesModule WidgetShare"
         });
         assert.deepEqual(valueToPath, {
             "WidgetShare": "widget/share.js"
