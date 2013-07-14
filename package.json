@@ -4,7 +4,7 @@
     "email": "bn@cs.stanford.edu"
   },
   "name": "commoner",
-  "description": "Brutally simple tool for translating any dialect of JavaScript into Node-readable CommonJS modules",
+  "description": "Flexible tool for translating any dialect of JavaScript into Node-readable CommonJS modules",
   "keywords": [
     "modules",
     "require",
