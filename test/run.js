@@ -1,6 +1,7 @@
 var Watcher = require("../lib/watcher").Watcher;
 var BuildContext = require("../lib/context").BuildContext;
 var ModuleReader = require("../lib/reader").ModuleReader;
+var grepP = require("../lib/grep");
 var util = require("../lib/util");
 var fs = require("fs");
 var Q = require("q");
@@ -125,7 +126,7 @@ exports.testReaderCaching = function(t, assert) {
 
 exports.testGrepP = function(t, assert) {
     Q.all([
-        watcher.grepP("@providesModule\\s+\\S+"),
+        grepP("@providesModule\\s+\\S+", watcher.sourceDir),
         debugContext.getProvidedP()
     ]).spread(function(pathToMatch, valueToPath) {
         assert.deepEqual(pathToMatch, {
