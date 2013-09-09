@@ -1,6 +1,7 @@
 var Watcher = require("../lib/watcher").Watcher;
 var BuildContext = require("../lib/context").BuildContext;
 var ModuleReader = require("../lib/reader").ModuleReader;
+var ReadFileCache = require("../lib/cache").ReadFileCache;
 var grepP = require("../lib/grep");
 var util = require("../lib/util");
 var fs = require("fs");
@@ -16,15 +17,15 @@ try {
     // pass
 }
 
-var watcher = new Watcher(sourceDir);
+var watcher = new Watcher(new ReadFileCache(sourceDir), false);
 
 var debugContext = new BuildContext({
     debug: true
-}, watcher, outputDir, []);
+}, new ReadFileCache(sourceDir));
 
 var releaseContext = new BuildContext({
     debug: false
-}, watcher, outputDir, []);
+}, new ReadFileCache(sourceDir));
 
 debugContext.setCacheDirectory(path.join(
     outputDir, ".debug-module-cache"));
@@ -126,7 +127,7 @@ exports.testReaderCaching = function(t, assert) {
 
 exports.testGrepP = function(t, assert) {
     Q.all([
-        grepP("@providesModule\\s+\\S+", watcher.sourceDir),
+        grepP("@providesModule\\s+\\S+", sourceDir),
         debugContext.getProvidedP()
     ]).spread(function(pathToMatch, valueToPath) {
         assert.deepEqual(pathToMatch, {
@@ -391,7 +392,7 @@ exports.testWriteFd = function(t, assert) {
 };
 
 exports.testWatcherBasic = function(t, assert) {
-    var watcher = new Watcher(sourceDir);
+    var watcher = new Watcher(new ReadFileCache(sourceDir), false);
     var dummy = "dummy.js";
     var dummyFile = path.join(sourceDir, dummy);
 
@@ -424,9 +425,9 @@ exports.testWatcherBasic = function(t, assert) {
 };
 
 exports.testWatchDirectory = function(t, assert) {
-    var watcher = new Watcher(sourceDir);
+    var watcher = new Watcher(new ReadFileCache(sourceDir), false);
     var watchMe = "watchMe.js";
-    var fullPath = path.join(watcher.sourceDir, watchMe);
+    var fullPath = path.join(sourceDir, watchMe);
 
     function waitForChangeP() {
         return util.makePromise(function(callback) {
