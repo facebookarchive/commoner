@@ -21,11 +21,11 @@ var watcher = new Watcher(new ReadFileCache(sourceDir), false);
 
 var debugContext = new BuildContext({
     debug: true
-}, new ReadFileCache(sourceDir));
+}, null, new ReadFileCache(sourceDir));
 
 var releaseContext = new BuildContext({
     debug: false
-}, new ReadFileCache(sourceDir));
+}, null, new ReadFileCache(sourceDir));
 
 debugContext.setCacheDirectory(path.join(
     outputDir, ".debug-module-cache"));

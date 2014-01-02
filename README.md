@@ -300,3 +300,22 @@ generates a recursive hash of all its properties and their values which is
 then incorporated into every module hash. This means that two modules with
 the same identifier and identical source code and processing steps will
 have distinct hashes if built using different configuration objects.
+
+Custom Options
+---
+
+You can define custom options for your script by using the `option` function.
+
+```js
+require("commoner").resolve(function(id) {
+    return this.readModule(id);
+}).option(
+    '--custom-option',
+    'This is a custom option.'
+).process(function(id, source) {
+    this.options.customOption // Access the option
+    return …;
+});
+```
+
+For more information of the options object available inside the `process` function see [Commander](https://github.com/visionmedia/commander.js).
