@@ -257,8 +257,10 @@ exports.testRelativize = function(t, assert) {
         return processor(
             moduleId,
             makeSource(requiredId)
-        ).then(function(source) {
-            assert.strictEqual(source, makeSource(expected));
+        ).then(function(output) {
+            assert.deepEqual(output, {
+                ".js": makeSource(expected)
+            });
         });
     }
 
