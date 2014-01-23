@@ -263,6 +263,56 @@ source files like `sidebar.less` and require them from other modules by
 invoking `require("sidebar.less")`. (And, by the way, embedding dynamic
 CSS modules in your JavaScript turns out to be an excellent idea.)
 
+Generating multiple files from one source module
+---
+
+Commoner is not limited to generating just one output file from each
+source module. For example, if you want to follow best practices for
+producing source maps, you probably want to create a `.map.json` file
+corresponding to every `.js` file that you compile.
+
+Recall that normally your `.process` callback returns a string (or a
+promise for a string) whose contents will be written as a `.js` file in
+the output directory. To write more than one file, just return an object
+whose keys are the file extensions of the files you want to write, and
+whose values are either strings or promises for strings representing the
+desired contents of those files.
+
+Here's an example of generating two different files for every source
+module, one called `<id>.map.json` and the other called `<id>.js`:
+```js
+require("commoner").resolve(function(id) {
+  return this.readModuleP(id);
+}).process(function(id, source) {
+  var result = compile(source);
+  return {
+    ".map.json": JSON.stringify(result.sourceMap),
+    ".js": [
+      result.code,
+      "//# sourceMappingURL=" + id + ".map.json"
+    ].join("\n")
+  };
+});
+```
+
+Note that
+```js
+return {
+  ".js": source
+};
+```
+would be equivalent to
+```js
+return source;
+```
+so you only have to return an object when you want to generate multiple
+files. However, the `.js` key is mandatory when returning an object.
+
+For your convenience, if you have a sequence of multiple processing
+functions, the values of the object returned from each step will be
+resolved before the object is passed along to the next processing
+function, so you can be sure all the values are strings (instead of
+promises) at the beginning of the next processing function.
 
 Configuration
 ---
