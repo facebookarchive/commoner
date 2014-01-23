@@ -125,6 +125,66 @@ exports.testReaderCaching = function(t, assert) {
     }).done(t.finish.bind(t));
 };
 
+exports.testMultipleFileOutput = function(t, assert) {
+    var mfSource = [
+        "function multiFile(foo) {",
+        "  console.log(foo);",
+        "}"
+    ].join("\n");
+
+    var pkg = require("../package.json");
+
+    function getSourceP(id) {
+        assert.strictEqual(id, "multi-file");
+        return Q.resolve(mfSource);
+    }
+
+    function processP1(id, source) {
+        assert.strictEqual(source, mfSource);
+        return {
+            ".js": source,
+            ".json": util.readJsonFileP(
+                path.join(__dirname, "..", "package.json")
+            )
+        };
+    }
+
+    function processP2(id, input) {
+        assert.strictEqual(input[".js"], mfSource);
+
+        var json = input[".json"];
+        assert.deepEqual(json, pkg);
+
+        input[".json"] = util.makePromise(function(callback) {
+            process.nextTick(function() {
+                callback(null, JSON.stringify(json));
+            });
+        });
+
+        return input;
+    }
+
+    function processP3(id, input) {
+        assert.strictEqual(input[".js"], mfSource);
+        assert.strictEqual(typeof input[".json"], "string");
+        assert.deepEqual(JSON.parse(input[".json"]), pkg);
+
+        return input;
+    }
+
+    var reader = new ModuleReader(
+        debugContext,
+        [getSourceP],
+        [processP1, processP2, processP3]
+    );
+
+    reader.readModuleP("multi-file").then(function(mf) {
+        assert.strictEqual(mf.id, "multi-file");
+        assert.strictEqual(mf.source, mfSource);
+        assert.deepEqual(JSON.parse(mf.output[".json"]), pkg);
+    }).done(t.finish.bind(t));
+};
+
 exports.testGrepP = function(t, assert) {
     Q.all([
         grepP("@providesModule\\s+\\S+", sourceDir),
@@ -257,8 +317,10 @@ exports.testRelativize = function(t, assert) {
         return processor(
             moduleId,
             makeSource(requiredId)
-        ).then(function(source) {
-            assert.strictEqual(source, makeSource(expected));
+        ).then(function(output) {
+            assert.deepEqual(output, {
+                ".js": makeSource(expected)
+            });
         });
     }
 
