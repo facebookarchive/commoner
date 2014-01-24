@@ -282,23 +282,23 @@ Here's an example of generating two different files for every source
 module, one called `<id>.map.json` and the other called `<id>.js`:
 ```js
 require("commoner").resolve(function(id) {
-  return this.readModuleP(id);
+    return this.readModuleP(id);
 }).process(function(id, source) {
-  var result = compile(source);
-  return {
-    ".map.json": JSON.stringify(result.sourceMap),
-    ".js": [
-      result.code,
-      "//# sourceMappingURL=" + id + ".map.json"
-    ].join("\n")
-  };
+    var result = compile(source);
+    return {
+        ".map.json": JSON.stringify(result.sourceMap),
+        ".js": [
+            result.code,
+            "//# sourceMappingURL=" + id + ".map.json"
+        ].join("\n")
+    };
 });
 ```
 
 Note that
 ```js
 return {
-  ".js": source
+    ".js": source
 };
 ```
 would be equivalent to
