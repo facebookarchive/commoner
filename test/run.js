@@ -20,12 +20,14 @@ try {
 var watcher = new Watcher(new ReadFileCache(sourceDir), false);
 
 var debugContext = new BuildContext({
-    debug: true
-}, null, new ReadFileCache(sourceDir));
+    config: { debug: true },
+    sourceDir: sourceDir
+}, new ReadFileCache(sourceDir));
 
 var releaseContext = new BuildContext({
-    debug: false
-}, null, new ReadFileCache(sourceDir));
+    config: { debug: false },
+    sourceDir: sourceDir
+}, new ReadFileCache(sourceDir));
 
 debugContext.setCacheDirectory(path.join(
     outputDir, ".debug-module-cache"));

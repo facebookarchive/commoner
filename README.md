@@ -363,8 +363,10 @@ require("commoner").resolve(function(id) {
     '--custom-option',
     'This is a custom option.'
 ).process(function(id, source) {
-    this.options.customOption // Access the option
-    return …;
+    if (this.options.customOption) {
+        source = doCustomThing(source);
+    }
+    return source;
 });
 ```
 
