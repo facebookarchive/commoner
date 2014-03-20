@@ -58,7 +58,7 @@ function waitForHelpers(t, helperP) {
 }
 
 function checkHome(assert, home) {
-    return Q.resolve(home).then(function(home) {
+    return Q(home).then(function(home) {
         assert.strictEqual(home.id, "home");
         assert.strictEqual(typeof home.source, "string");
         assert.notEqual(home.source.indexOf("exports"), -1);
@@ -117,7 +117,7 @@ exports.testReaderCaching = function(t, assert) {
     assert.notStrictEqual(homes[0], homes[2]);
     assert.notStrictEqual(homes[1], homes[2]);
 
-    Q.all(homes).spread(function(h0, h1, h2) {
+    Q.spread(homes, function(h0, h1, h2) {
         assert.strictEqual(h0, h1);
         assert.strictEqual(h0, h2);
         assert.strictEqual(h1, h2);
@@ -138,7 +138,7 @@ exports.testMultipleFileOutput = function(t, assert) {
 
     function getSourceP(id) {
         assert.strictEqual(id, "multi-file");
-        return Q.resolve(mfSource);
+        return Q(mfSource);
     }
 
     function processP1(id, source) {
@@ -188,10 +188,10 @@ exports.testMultipleFileOutput = function(t, assert) {
 };
 
 exports.testGrepP = function(t, assert) {
-    Q.all([
+    Q.spread([
         grepP("@providesModule\\s+\\S+", sourceDir),
         debugContext.getProvidedP()
-    ]).spread(function(pathToMatch, valueToPath) {
+    ], function(pathToMatch, valueToPath) {
         assert.deepEqual(pathToMatch, {
             "widget/share.js": "@providesModule WidgetShare",
             "widget/.bogus.js": "@providesModule WidgetShare",
@@ -237,10 +237,10 @@ exports.testProvidesModule = function(t, assert) {
         ], []);
 
         return Q.all([
-            Q.all([
+            Q.spread([
                 reader.readModuleP("widget/share"),
                 reader.readModuleP("WidgetShare")
-            ]).spread(function(ws1, ws2) {
+            ], function(ws1, ws2) {
                 assert.strictEqual(ws1.id, ws2.id);
                 assert.strictEqual(ws1.id, "WidgetShare");
                 assert.strictEqual(ws1, ws2);
@@ -263,10 +263,10 @@ exports.testProvidesModule = function(t, assert) {
                 assert.strictEqual(deps[0].id, "WidgetShare");
             }),
 
-            Q.all([
+            Q.spread([
                 reader.getSourceP("widget/share"),
                 reader.getSourceP("WidgetShare")
-            ]).spread(function(source1, source2) {
+            ], function(source1, source2) {
                 assert.strictEqual(source1, source2);
             })
         ]);
@@ -356,12 +356,12 @@ exports.testGetCanonicalId = function(t, assert) {
             getSourceP
         ], []);
 
-        return Q.all([
+        return Q.spread([
             reader.getCanonicalIdP("widget/share"),
             reader.getCanonicalIdP("WidgetShare"),
             reader.readModuleP("widget/share").get("id"),
             reader.readModuleP("WidgetShare").get("id")
-        ]).spread(function(ws1, ws2, ws3, ws4) {
+        ], function(ws1, ws2, ws3, ws4) {
             assert.strictEqual(ws1, "WidgetShare");
             assert.strictEqual(ws2, "WidgetShare");
             assert.strictEqual(ws3, "WidgetShare");
@@ -441,7 +441,7 @@ exports.testWriteFd = function(t, assert) {
         };
     }
 
-    Q.resolve("ignored")
+    Q("ignored")
         .then(check("x"))
         .then(check("x\ny"))
         .then(check("x\r\ny"))
@@ -449,7 +449,7 @@ exports.testWriteFd = function(t, assert) {
         .then(check("\ufeff")) // zero-width non-breaking space
         .then(check("\u2603")) // snowman
         .then(check("\ud83d\udc19")) // octopus
-        .fin(function() {
+        .finally(function() {
             return util.unlinkP(file);
         })
         .done(t.finish.bind(t));
@@ -525,7 +525,7 @@ exports.testWatchDirectory = function(t, assert) {
         return promise;
     }).then(function() {
         return write("third");
-    }).fin(function() {
+    }).finally(function() {
         return util.unlinkP(fullPath);
     }).done(function() {
         watcher.close();
