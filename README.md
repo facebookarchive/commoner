@@ -53,17 +53,23 @@ Usage
 ---
 
 Here's the output of `bin/commonize --help`:
+```
+Usage: commonize [options] <source directory> <output directory> [<module ID> [<module ID> ...]]
 
-    Usage: commonize [options] <source directory> <output directory> [<module ID> [<module ID> ...]]
+Options:
 
-    Options:
-
-      -h, --help                           output usage information
-      -V, --version                        output the version number
-      -c, --config [file]                  JSON configuration file (no file means STDIN)
-      -w, --watch                          Continually rebuild
-      -x, --extension <js | coffee | ...>  File extension to assume when resolving module identifiers
-      --cache-dir <directory>              Alternate directory to use for disk cache
+  -h, --help                               output usage information
+  -V, --version                            output the version number
+  -c, --config [file]                      JSON configuration file (no file means STDIN)
+  -w, --watch                              Continually rebuild
+  -x, --extension <js | coffee | ...>      File extension to assume when resolving module identifiers
+  --relativize                             Rewrite all module identifiers to be relative
+  --follow-requires                        Scan modules for required dependencies
+  --cache-dir <directory>                  Alternate directory to use for disk cache
+  --no-cache-dir                           Disable the disk cache
+  --source-charset <utf8 | win1252 | ...>  Charset of source (default: utf8)
+  --output-charset <utf8 | win1252 | ...>  Charset of output (default: utf8)
+```
 
 In a single sentence: the `commonize` command finds modules with the given
 module identifiers in the source directory and places a processed copy of
