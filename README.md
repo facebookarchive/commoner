@@ -1,4 +1,4 @@
-Commoner [![Build Status](https://travis-ci.org/benjamn/commoner.png?branch=master)](https://travis-ci.org/benjamn/commoner)
+Commoner [![Build Status](https://travis-ci.org/reactjs/commoner.png?branch=master)](https://travis-ci.org/reactjs/commoner)
 ---
 
 Commoner makes it easy to write scripts that flexibly and efficiently
@@ -45,7 +45,7 @@ From NPM:
 From GitHub:
 
     cd path/to/node_modules
-    git clone git://github.com/benjamn/commoner.git
+    git clone git://github.com/reactjs/commoner.git
     cd commoner
     npm install .
 
@@ -100,7 +100,7 @@ avoid processing a module if it has ever previously processed the same
 module in the same way.
 
 If you dig into [the
-code](https://github.com/benjamn/commoner/blob/5e7f65cab2/lib/context.js#L94),
+code](https://github.com/reactjs/commoner/blob/5e7f65cab2/lib/context.js#L94),
 you'll find that Commoner maintains a cache directory (by default,
 `~/.commoner/module-cache/`) containing files with names like
 `9ffc5c853aac07bc106da1dc1b2486903ca688bf.js`.  When Commoner is about to

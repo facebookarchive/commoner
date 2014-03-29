@@ -16,10 +16,10 @@
   ],
   "version": "0.9.2",
   "license": "MIT",
-  "homepage": "http://github.com/benjamn/commoner",
+  "homepage": "http://github.com/reactjs/commoner",
   "repository": {
     "type": "git",
-    "url": "git://github.com/benjamn/commoner.git"
+    "url": "git://github.com/reactjs/commoner.git"
   },
   "main": "main.js",
   "bin": {
