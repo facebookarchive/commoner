@@ -26,7 +26,7 @@
     "commonize": "./bin/commonize"
   },
   "scripts": {
-    "test": "whiskey test/run.js"
+    "test": "node test/run-tests.js"
   },
   "dependencies": {
     "q": "~1.0.1",
