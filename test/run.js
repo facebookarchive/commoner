@@ -20,35 +20,24 @@ try {
 
 var watcher = new Watcher(new ReadFileCache(sourceDir), false);
 
-// Get a new context. Defaults to setRelativize(true) and setUseProvidesModule(true)
-function getNewContext(options) {
-    var context = new BuildContext({
-        config: { debug: options.debug },
-        sourceDir: sourceDir
-    }, new ReadFileCache(sourceDir));
-    context.setCacheDirectory(path.join(outputDir, options.cacheDirectory));
-    context.setRelativize(options.relative === undefined || options.relative);
-    context.setUseProvidesModule(options.useProvidesModule === undefined || options.useProvidesModule );
-    return context;
-}
+var debugContext = new BuildContext({
+    config: { debug: true },
+    sourceDir: sourceDir
+}, new ReadFileCache(sourceDir));
 
-function getNewDebugContext(options) {
-    options = options || {};
-    options.debug = true;
-    options.cacheDirectory = ".debug-module-cache";
-    return getNewContext(options);
-}
+var releaseContext = new BuildContext({
+    config: { debug: false },
+    sourceDir: sourceDir
+}, new ReadFileCache(sourceDir));
 
-function getNewReleaseContext(options) {
-    options = options || {};
-    options.debug = false;
-    options.cacheDirectory = ".release-module-cache";
-    return getNewContext(options);
-}
+debugContext.setCacheDirectory(path.join(
+    outputDir, ".debug-module-cache"));
 
-var debugContext = getNewDebugContext();
+releaseContext.setCacheDirectory(path.join(
+    outputDir, ".release-module-cache"));
 
-var releaseContext = getNewReleaseContext();
+debugContext.setRelativize(true);
+releaseContext.setRelativize(true);
 
 function getProvidedP(id) {
     var context = this;
@@ -62,10 +51,10 @@ function getSourceP(id) {
     return this.readModuleP(id);
 }
 
-function waitForHelpers(done, helperP, contextOptions) {
+function waitForHelpers(done, helperP) {
     Q.all([
-        helperP(getNewDebugContext(contextOptions)),
-        helperP(getNewReleaseContext(contextOptions))
+        helperP(debugContext),
+        helperP(releaseContext)
     ]).done(function() {
         done();
     });
@@ -435,32 +424,6 @@ describe("canonical module identifiers", function() {
         return string.split(substring).length - 1;
     }
 });
-
-describe("canonical module identifiers without --use-provides-module", function() {
-    it("should not be returned by reader.getCanonicalIdP nor reader.readModuleP", function(done) {
-        function helperP(context) {
-            console.log(context.useProvidesModule);
-            var reader = new ModuleReader(context, [
-                getProvidedP,
-                getSourceP
-            ], []);
-
-            return Q.spread([
-                reader.getCanonicalIdP("widget/share"),
-                reader.getCanonicalIdP("WidgetShare"),
-                reader.readModuleP("widget/share").get("id"),
-                reader.readModuleP("WidgetShare").get("id")
-            ], function(ws1, ws2, ws3, ws4) {
-                assert.strictEqual(ws1, "widget/share");
-                assert.strictEqual(ws2, "WidgetShare");
-                assert.strictEqual(ws3, "widget/share");
-                assert.strictEqual(ws4, "WidgetShare");
-            });
-        }
-
-        waitForHelpers(done, helperP, {useProvidesModule: false});
-    });
-})
 
 describe("util.flatten", function() {
     it("should flatten deeply nested arrays", function() {
