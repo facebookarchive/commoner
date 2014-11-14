@@ -32,7 +32,7 @@
     "q": "~1.0.1",
     "recast": "~0.7.0",
     "commander": "~2.2.0",
-    "graceful-fs": "~2.0.3",
+    "graceful-fs": "*",
     "glob": "~3.2.9",
     "mkdirp": "~0.3.5",
     "private": "~0.1.2",
