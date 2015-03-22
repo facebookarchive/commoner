@@ -29,6 +29,7 @@ function getNewContext(options) {
     context.setCacheDirectory(path.join(outputDir, options.cacheDirectory));
     context.setRelativize(options.relative === undefined || options.relative);
     context.setUseProvidesModule(options.useProvidesModule === undefined || options.useProvidesModule );
+    context.setIgnorePatterns(options.ignorePatterns || [ /ignored/, /^react[\/$]/ ]);
     return context;
 }
 
@@ -77,6 +78,8 @@ function checkHome(assert, home) {
         assert.strictEqual(typeof home.source, "string");
         assert.notEqual(home.source.indexOf("exports"), -1);
         assert.strictEqual(home.source.indexOf('require("./assert");'), 0);
+        assert.notEqual(home.source.indexOf('require("ignored-module");'), -1);
+        assert.notEqual(home.source.indexOf('require("react/addons");'), -1);
         return home;
     }).invoke("getRequiredP").then(function(reqs) {
         assert.strictEqual(reqs.length, 1);

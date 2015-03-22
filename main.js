@@ -14,3 +14,4 @@ function defCallback(name) {
 defCallback("version");
 defCallback("resolve");
 defCallback("process");
+defCallback("ignore");
