@@ -401,7 +401,7 @@ describe("canonical module identifiers", function() {
 
     it("should replace non-canonical required identifiers", function(done) {
         function helperP(context) {
-            assert.strictEqual(context.ignoreDependencies, false);
+            assert.strictEqual(context.followRequires, true);
 
             var reader = new ModuleReader(context, [
                 getProvidedP,
