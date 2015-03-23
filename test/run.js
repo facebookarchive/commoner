@@ -1,5 +1,4 @@
 var assert = require("assert");
-var findup = require('findup-sync');
 var Watcher = require("../lib/watcher").Watcher;
 var BuildContext = require("../lib/context").BuildContext;
 var ModuleReader = require("../lib/reader").ModuleReader;
@@ -23,7 +22,6 @@ var watcher = new Watcher(new ReadFileCache(sourceDir), false);
 
 // Get a new context. Defaults to setRelativize(true) and setUseProvidesModule(true)
 function getNewContext(options) {
-    var packageDeps = Object.keys(require(findup("package.json")).dependencies);
     var context = new BuildContext({
         config: { debug: options.debug },
         sourceDir: sourceDir
@@ -31,7 +29,7 @@ function getNewContext(options) {
     context.setCacheDirectory(path.join(outputDir, options.cacheDirectory));
     context.setRelativize(options.relative === undefined || options.relative);
     context.setUseProvidesModule(options.useProvidesModule === undefined || options.useProvidesModule );
-    context.setIgnorePatterns(options.ignorePatterns || [ /ignored/, /^react[\/$]/, new RegExp("^(" + packageDeps.join('|') + ")(\\/|$)") ]);
+    context.setIgnorePatterns(options.ignorePatterns || [ /ignored/, /^react[\/$]/, util.makeDepsIgnorePattern(), util.makeCoreIgnorePattern() ]);
     return context;
 }
 
@@ -79,15 +77,16 @@ function checkHome(assert, home) {
         assert.strictEqual(home.id, "home");
         assert.strictEqual(typeof home.source, "string");
         assert.notEqual(home.source.indexOf("exports"), -1);
-        assert.strictEqual(home.source.indexOf('require("./assert");'), 0);
+        assert.strictEqual(home.source.indexOf('require("./myassert");'), 0);
         assert.notEqual(home.source.indexOf('require("ignored-module");'), -1);
         assert.notEqual(home.source.indexOf('require("react/addons");'), -1);
         assert.notEqual(home.source.indexOf('require("recast");'), -1);
         assert.notEqual(home.source.indexOf('require("recast/lib/types");'), -1);
+        assert.notEqual(home.source.indexOf('require("fs");'), -1);
         return home;
     }).invoke("getRequiredP").then(function(reqs) {
         assert.strictEqual(reqs.length, 1);
-        assert.strictEqual(reqs[0].id, "assert");
+        assert.strictEqual(reqs[0].id, "myassert");
     });
 }
 
@@ -429,7 +428,7 @@ describe("canonical module identifiers", function() {
                 ), 2);
 
                 assert.strictEqual(strCount(
-                    'require("../assert")',
+                    'require("../myassert")',
                     follow.source
                 ), 2);
             });
