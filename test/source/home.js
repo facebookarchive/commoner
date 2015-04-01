@@ -7,6 +7,7 @@ require("react/addons"); // also ignored
 
 require("recast"); // defined as dependency in package.json
 require("recast/lib/types");
+require("mocha"); // a dev dependency
 
 require("fs"); // node built-in
 

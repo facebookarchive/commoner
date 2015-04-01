@@ -82,6 +82,7 @@ function checkHome(assert, home) {
         assert.notEqual(home.source.indexOf('require("react/addons");'), -1);
         assert.notEqual(home.source.indexOf('require("recast");'), -1);
         assert.notEqual(home.source.indexOf('require("recast/lib/types");'), -1);
+        assert.notEqual(home.source.indexOf('require("mocha");'), -1);
         assert.notEqual(home.source.indexOf('require("fs");'), -1);
         return home;
     }).invoke("getRequiredP").then(function(reqs) {
