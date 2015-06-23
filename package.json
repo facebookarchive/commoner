@@ -26,7 +26,7 @@
     "commonize": "./bin/commonize"
   },
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha --reporter spec test/run.js"
+    "test": "rm -rf test/output ; node ./node_modules/mocha/bin/mocha --reporter spec test/run.js"
   },
   "dependencies": {
     "q": "~1.1.2",
