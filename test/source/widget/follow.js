@@ -9,9 +9,9 @@ require("../WidgetShare");
 require("../widget/gallery");
 require("./gallery");
 
-// These both become "../assert".
-require("assert");
-require("../assert");
+// These both become "../myassert".
+require("myassert");
+require("../myassert");
 
 // These circular references should both become "./follow".
 require("./follow");

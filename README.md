@@ -65,6 +65,8 @@ Options:
   -x, --extension <js | coffee | ...>      File extension to assume when resolving module identifiers
   --relativize                             Rewrite all module identifiers to be relative
   --follow-requires                        Scan modules for required dependencies
+  --ignore-dependencies                    Ignore modules defined as dependencies in package.json
+  --ignore-node-core                       Ignore Node's core modules ('fs', 'events', etc.)
   --cache-dir <directory>                  Alternate directory to use for disk cache
   --no-cache-dir                           Disable the disk cache
   --source-charset <utf8 | win1252 | ...>  Charset of source (default: utf8)
