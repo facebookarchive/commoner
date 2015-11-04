@@ -29,18 +29,18 @@
     "test": "rm -rf test/output ; node ./node_modules/mocha/bin/mocha --reporter spec test/run.js"
   },
   "dependencies": {
-    "q": "~1.1.2",
-    "recast": "~0.10.0",
-    "commander": "~2.5.0",
-    "graceful-fs": "~3.0.4",
-    "glob": "~4.2.1",
-    "mkdirp": "~0.5.0",
-    "private": "~0.1.6",
-    "install": "~0.1.7",
-    "iconv-lite": "~0.4.5"
+    "q": "^1.1.2",
+    "recast": "^0.10.0",
+    "commander": "^2.5.0",
+    "graceful-fs": "^4.1.2",
+    "glob": "^5.0.15",
+    "mkdirp": "^0.5.0",
+    "private": "^0.1.6",
+    "install": "^0.1.8",
+    "iconv-lite": "^0.4.5"
   },
   "devDependencies": {
-    "mocha": "~2.0.1"
+    "mocha": "^2.3.3"
   },
   "engines": {
     "node": ">= 0.8"
