@@ -22,6 +22,11 @@
     "url": "git://github.com/reactjs/commoner.git"
   },
   "main": "main.js",
+  "files": [
+    "bin",
+    "lib",
+    "main.js"
+  ],
   "bin": {
     "commonize": "./bin/commonize"
   },
