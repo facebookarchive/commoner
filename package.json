@@ -34,15 +34,15 @@
     "test": "rm -rf test/output ; node ./node_modules/mocha/bin/mocha --reporter spec test/run.js"
   },
   "dependencies": {
-    "q": "^1.1.2",
-    "recast": "^0.10.0",
     "commander": "^2.5.0",
-    "graceful-fs": "^4.1.2",
+    "detective": "^4.3.1",
     "glob": "^5.0.15",
+    "graceful-fs": "^4.1.2",
+    "iconv-lite": "^0.4.5",
     "mkdirp": "^0.5.0",
     "private": "^0.1.6",
-    "install": "^0.1.8",
-    "iconv-lite": "^0.4.5"
+    "q": "^1.1.2",
+    "recast": "^0.10.0"
   },
   "devDependencies": {
     "mocha": "^2.3.3"
