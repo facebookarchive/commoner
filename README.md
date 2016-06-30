@@ -1,3 +1,9 @@
+- - -
+
+**_This project is not actively maintained. Proceed at your own risk!_**
+
+- - - 
+
 Commoner [![Build Status](https://travis-ci.org/reactjs/commoner.png?branch=master)](https://travis-ci.org/reactjs/commoner)
 ---
 
